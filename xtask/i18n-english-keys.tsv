@@ -1,0 +1,2405 @@
+# English UI translation keys: context<TAB>source. Keep synchronized with UI keys and catalogs.
+	(coming soon)
+	(print to the printer)
+	+ Add variable
+	10 fps
+	100%
+	15 fps
+	16 Bits/Channel
+	180°
+	2-up Horizontal
+	2-up Vertical
+	200%
+	24 fps
+	25 fps
+	3-up Horizontal
+	3-up Stacked
+	3-up Vertical
+	30 fps
+	30 frames @ 30 fps
+	32 Bits/Channel
+	32-bit Preview Options…
+	3D
+	3D LUT File
+	3D…
+	4-up
+	6-up
+	8 Bits/Channel
+	90° Clockwise
+	90° Counter Clockwise
+	ACES
+	AI Integrations…
+	About PhotoCraft
+	Absolute
+	Absolute Colorimetric
+	Accurate
+	Action
+	Actions
+	Actual Color
+	Adaptive
+	Adaptive Wide Angle
+	Adaptive Wide Angle isn't open
+	Adaptive Wide Angle…
+	Add
+	Add Layer Mask
+	Add Noise…
+	Add Pins
+	Add Stop
+	Add Vector Mask
+	Add a layer style
+	Add a mask  (from the selection; {key} inverts)
+	Add a mask  (from the selection; ⌥ inverts)
+	Add an adjustment
+	Add disk
+	Add space after paragraph
+	Add space before paragraph
+	Add to
+	Add to Sample
+	Add to selection  ({key})
+	Add to selection  (⇧)
+	Add vector mask
+	Additional plugins folder
+	Adds grain to the soft edges of the brush tip.
+	Adjust for Zoom
+	Adjustment
+	Adjustment Layer
+	Adjustment Preview
+	Adjustment layers have nothing to transform
+	Adjustment visible
+	Adjustments
+	Adobe
+	Adobe Every-line Composer
+	Adobe PDF Presets…
+	Adobe RGB (1998)
+	Adobe RGB (1998) compatible
+	Adobe Single-line Composer
+	Adobe rgb
+	Advanced
+	Advanced Blending
+	Advanced Controls
+	After (X)
+	Again
+	Airbrush: keeps depositing paint while the pointer rests.
+	Airbrush: keeps painting while the pointer rests.
+	Align
+	Align and Distribute
+	Align and distribute
+	Align horizontal centers
+	Align left edges
+	Align right edges
+	Align with layer
+	Align {what}
+	Aligned
+	Alignment
+	All
+	All Caps
+	All Layers
+	All Slices
+	All User Slices
+	All shortcuts reset to Photoshop defaults.
+	Allow agent control
+	Allow scripts to connect
+	Alpha
+	Alt
+	Alt-click to define a source point to clone from
+	Alternates for Current Selection
+	Alternative
+	Altitude
+	Always
+	Always create smart objects when placing
+	Always use pressure for opacity
+	Always use pressure for size
+	Amount
+	Analysis
+	Anamorphic 2:1 (2)
+	Anchor:
+	Android 1080p
+	Angle
+	Angle Gradient
+	Angle Jitter
+	Angle:
+	Animated zoom
+	Answer the unsaved-changes prompt first
+	Anti-Alias
+	Anti-alias
+	Anti-aliasing method
+	Aperture
+	Appearance
+	Appearance (Layer Style)
+	Apple RGB
+	Apple Watch 45mm
+	Applies at next launch.
+	Apply
+	Apply Data Set…
+	Apply Image…
+	Apply Layer Comp
+	Apply Layer Mask
+	Apply Per Tip
+	Apply auto tone
+	Apply next selected layer comp
+	Apply previous selected layer comp
+	Apply the pen's tilt and rotation to the tip shape
+	Aqua
+	Arbitrary…
+	Arc
+	Arch
+	Arrange
+	Art & Illustration
+	Art History Brush
+	ArtCraft
+	ArtCraft Website
+	Artboard
+	Artboard Background Color
+	Artboard Guides
+	Artboard from Group…
+	Artboard from Layers…
+	Artboards to Files…
+	Artboards to PDF…
+	Artboard…
+	Artist
+	Ask
+	Ask Before Saving Saved Embedded
+	Ask When Pasting
+	Ask before saving layered tiff
+	Aspect Ratio
+	Assign Profile…
+	Assign working space
+	Audio
+	Author
+	Author:
+	Auto
+	Auto Clean Brush
+	Auto Color
+	Auto Contrast
+	Auto Erase
+	Auto Hide
+	Auto Tone
+	Auto collapse icon panels
+	Auto show hidden panels
+	Auto show home screen
+	Auto-Align Layers…
+	Auto-Blend Layers…
+	Auto-Hide
+	Auto-Leading
+	Auto-Select:
+	Auto-leading %
+	Automate
+	Automatically Create First Snapshot
+	Automatically Create New Snapshot When Saving
+	Automatically level near-horizontal line segments
+	Automatically straighten and level
+	Automatically straighten near-vertical line segments
+	Autosave
+	Autosave minutes
+	Average
+	Avoid Widows/Orphans
+	BLANK DOCUMENT PRESETS ({n})
+	Background
+	Background Color
+	Background Contents
+	Background Eraser Tool
+	Background from Layer
+	Balance
+	Baseline
+	Baseline Shift
+	Baseline shift
+	Basic
+	Batch…
+	Beep when done
+	Before (Y)
+	Begin recording
+	Bend:
+	Bevel & Emboss
+	Bevel & Emboss…
+	Bicubic
+	Bicubic (smooth gradients)
+	Bicubic automatic
+	Bicubic sharper
+	Bicubic smoother
+	Bilinear
+	Bit depth
+	Bitmap
+	Bitmap…
+	Black
+	Black & White
+	Black & White…
+	Black Point Compensation
+	Black, White
+	Blacks
+	Blend
+	Blend If
+	Blend Mode
+	Blend RGB Colors Using Gamma 1.0
+	Blending
+	Blending Options
+	Blending Options…
+	Blue
+	Blue, Red, Yellow
+	Blues
+	Blur
+	Blur Gallery
+	Blur More
+	Blur Tool
+	Bold
+	Bold Italic
+	Border…
+	Both
+	Both Axes
+	Bottom
+	Bottom Edges
+	Box Blur…
+	Brightness
+	Brightness Jitter
+	Brightness/Contrast
+	Brightness/Contrast…
+	Bring Forward
+	Bring the selected pin forward
+	Bring to Front
+	Browse…
+	Brush
+	Brush Pose
+	Brush Preset picker
+	Brush Preview
+	Brush Projection
+	Brush Reconstruct Options
+	Brush Settings
+	Brush Settings…  (F5): every option of this brush
+	Brush Size
+	Brush Tip
+	Brush Tip Shape
+	Brush Tool
+	Brush Tool Options
+	Brush name
+	Brush picker
+	Brush preview color
+	Brushes
+	Build-up
+	Bulge
+	Burn
+	Burn Tool
+	Byline
+	Byline Title
+	CIE RGB
+	CMYK Color
+	CMYK:
+	CPU (no GPU acceleration)
+	Cache Level:
+	Cache levels
+	Cache tile size
+	Calculations…
+	Camera Calibration
+	Camera Data
+	Camera Make
+	Camera Model
+	Camera Raw Defaults
+	Camera Raw Filter…
+	Camera Raw isn't open
+	Camera Raw…
+	Cancel
+	Cancel (Esc)
+	Cancel any current edits (Esc)
+	Cancel current crop operation  (Esc)
+	Cancel opening
+	Cancel transform (Esc)
+	Cancel warp (Esc)
+	Cancelled opening {name}
+	Cancelled {label}
+	Canvas
+	Canvas Guides
+	Canvas Size…
+	Canvas border
+	Canvas color
+	Canvas custom color
+	Canvas extension color:
+	Canvas rotation
+	Caption
+	Caption Credits
+	Capture
+	Capture Comp
+	Capture the visibility, position and style of every layer with + below, then switch between versions.
+	Cascade
+	Catch-up on Stroke End
+	Category
+	Center
+	Center Crop Marks
+	Center text
+	Centimeters
+	Centre the gradient (offset 0, 0)
+	Chalk & Charcoal
+	Change
+	Change All
+	Change Screen Mode  (F)
+	Change To:
+	Channel
+	Channel Mixer
+	Channel Mixer…
+	Channel:
+	Channels
+	Character
+	Character Panel
+	Character Styles
+	Character Styles Panel
+	Charcoal
+	Check All Layers
+	Check Spelling
+	Check Spelling…
+	Choke
+	Choose…
+	Chrome
+	City
+	Clarity
+	Classic
+	Classic Theme
+	Clear
+	Clear All
+	Clear Canvas Guides
+	Clear Guides
+	Clear History
+	Clear Layer Style
+	Clear Override
+	Clear Recent Files
+	Clear Samples
+	Clear Selected Artboard Guides
+	Clear Slices
+	Clear Smart Filters
+	Click sets foreground · right-click sets background
+	Click the first point or press {key} to close · Esc cancels
+	Click the first point or press ↵ to close · Esc cancels
+	Click to add a point · drag off or {key}-click or Delete to remove
+	Click to add a point · drag off or ⌘/Ctrl-click or Delete to remove
+	Click to add text
+	Click to apply, {key}-click to clear overrides, double-click for Style Options
+	Click to apply, ⌥-click to clear overrides, double-click for Style Options
+	Click to edit the gradient
+	Click to fill similar colours
+	Click to restore the current colour
+	Click to sample the foreground colour  ·  {key}-click for background
+	Click to zoom in  ·  {key}-click to zoom out  ·  drag right/left to zoom in/out
+	Click to zoom in  ·  ⌥-click to zoom out
+	Click with the Note tool to add a note.
+	Click: corner · Drag: smooth · Click first point: close · {key} finish · Esc cancel
+	Click: corner · Drag: smooth · Click first point: close · ↩ finish · Esc cancel
+	Clip to layer below
+	Clipboard
+	Clipped
+	Clipping Path
+	Clone Source
+	Clone Stamp
+	Clone Stamp Tool
+	Clone source {n} ({key}-click with Clone Stamp to set)
+	Close
+	Close All
+	Close Others
+	Close Style Options
+	Close Tab Group
+	Clouds
+	Cmd
+	Coated CMYK
+	Coerce to sRGB
+	Collapse
+	Collapse All Groups
+	Collapse Panel Group
+	Collapse group  ({key}-click: all groups)
+	Collapse group  (⌥-click: all groups)
+	Color
+	Color & Swatches
+	Color Adaptation
+	Color Balance
+	Color Balance…
+	Color Blindness — Deuteranopia-type
+	Color Blindness — Protanopia-type
+	Color Burn
+	Color Decontaminate…
+	Color Detail
+	Color Dodge
+	Color Dynamics
+	Color Grading
+	Color Halftone…
+	Color Lookup
+	Color Lookup Tables…
+	Color Lookup…
+	Color Management
+	Color Management Policies
+	Color Mixer
+	Color Mode
+	Color Noise Reduction
+	Color Overlay
+	Color Overlay…
+	Color Priority
+	Color Profile
+	Color Range
+	Color Range preview
+	Color Range…
+	Color Replacement
+	Color Settings…
+	Color Table…
+	Color indicates
+	Color picker
+	Color space
+	Color:
+	ColorMatch RGB
+	ColorSync
+	Colorize
+	Colors
+	Column width
+	Columns
+	Combine Shapes
+	Comic Book
+	Command
+	Commit Perspective Warp ({key})
+	Commit Perspective Warp (↩)
+	Commit Puppet Warp ({key})
+	Commit Puppet Warp (↩)
+	Commit any current edits ({key})
+	Commit any current edits (⌘↩)
+	Commit current crop operation  ({key})
+	Commit current crop operation  (↵)
+	Commit transform ({key})
+	Commit transform (↩)
+	Commit warp ({key})
+	Commit warp (↩)
+	Compatibility
+	Compose
+	Concise
+	Condensed
+	Conditional Mode Change…
+	Conform
+	Consolidate All to Tabs
+	Constant
+	Constrain proportions
+	Constraints ({n})
+	Contact Sheet II
+	Contact Sheet II…
+	Content-Aware
+	Content-Aware Fill needs a selection on a pixel layer
+	Content-Aware Fill…
+	Content-Aware Move
+	Content-Aware Scale
+	Contextual Alternates
+	Contiguous
+	Contract…
+	Contrast
+	Control port
+	Control:
+	Conté Crayon
+	Convert Frames > Video Layers
+	Convert document's colors to the working space
+	Convert for Smart Filters
+	Convert to Embedded
+	Convert to Grayscale
+	Convert to Linked…
+	Convert to Paragraph Text
+	Convert to Point Text
+	Convert to Profile…
+	Convert to Shape
+	Convert to Smart Object
+	Convert to sRGB
+	Convert to srgb
+	Copies
+	Copper
+	Copy
+	Copy Layer Style
+	Copy Merged
+	Copyright
+	Copyright Info URL
+	Copyright Status
+	Copyright and Contact Info
+	Copyrighted
+	Corner Crop Marks
+	Corner radius
+	Correction
+	Could not transform: the layer is empty
+	Could not use Perspective Warp: the layer is empty
+	Could not use Puppet Warp: no opaque pixels
+	Could not use Puppet Warp: the layer is empty
+	Count
+	Count Jitter
+	Count Tool
+	Count: {n}
+	Country
+	Create
+	Create Clipping Mask
+	Create Date
+	Create Droplet
+	Create Droplet…
+	Create Layer
+	Create Multiple Picture Packages
+	Create Plane
+	Create Snapshot
+	Create Texture
+	Create Video Timeline
+	Create Warped Text
+	Create Work Path
+	Create a new count group
+	Create a new document or open an existing file.
+	Create a new group
+	Create a new layer
+	Create a new layer  (⇧⌘N)
+	Create new action
+	Create new brush from the current settings
+	Create new brush from these settings
+	Create new brush preset from the current settings
+	Create new channel
+	Create new count group
+	Create new document from current state
+	Create new fill or adjustment layer
+	Create new gradient
+	Create new group
+	Create new layer
+	Create new layer comp
+	Create new path
+	Create new pattern from the selection
+	Create new set
+	Create new shape from the current path
+	Create new snapshot
+	Create new style (from the selected type)
+	Create new style from the selected layer
+	Create new tool preset
+	Credit
+	Crisp
+	Crop
+	Crop Factor
+	Crop Tool
+	Crop and Straighten Photos
+	Crosswise
+	Crystallize…
+	Ctrl
+	Current
+	Current & Below
+	Current Layer
+	Current Path
+	Current Size
+	Current Time
+	Current Tool
+	Current Tool Only
+	Cursors
+	Cursors…
+	Curve
+	Curves
+	Curves…
+	Custom
+	Custom Pixel Aspect Ratio…
+	Custom Shape Tool
+	Custom Shapes
+	Custom dark
+	Custom light
+	Custom pattern
+	Custom…
+	Cut
+	Cyan
+	Cyan  ·  Red
+	Cyans
+	Cycle Screen Mode
+	D1/DV NTSC (0.91)
+	D1/DV NTSC Widescreen (1.21)
+	D1/DV PAL (1.09)
+	D1/DV PAL Widescreen (1.46)
+	DVCPRO HD 1080/HDV 1080 (1.5)
+	Dark
+	Dark gray
+	Darken
+	Darker Color
+	Darks
+	Dashed lines
+	Data Sets
+	Data Sets as Files…
+	Data Sets…
+	Date Created
+	DateTime Original
+	De-Interlace…
+	Default
+	Default Features
+	Default Photoshop Size
+	Default colours (D)
+	Default printer
+	Default restored.
+	Defaults restored.
+	Define
+	Define Brush Preset…
+	Define Custom Shape…
+	Define Pattern…
+	Define at least one variable first.
+	Define…
+	Defringe…
+	Dehaze
+	Delete
+	Delete All Empty Layers
+	Delete Brush
+	Delete Cropped Pixels
+	Delete Filter Mask
+	Delete Frame
+	Delete Group
+	Delete Layer
+	Delete Layer Mask
+	Delete Layers
+	Delete Layer…
+	Delete Path
+	Delete Pins
+	Delete Preset…
+	Delete Shortcut
+	Delete Smart Filters
+	Delete Snapshot
+	Delete Timeline
+	Delete Tool Preset
+	Delete Vector Mask
+	Delete Workspace
+	Delete Workspace…
+	Delete brush
+	Delete count group
+	Delete current channel
+	Delete current state
+	Delete effect layer
+	Delete layer
+	Delete layer comp
+	Delete note
+	Delete path
+	Delete selected measurements
+	Delete style
+	Delete tool preset
+	Delete vector mask
+	Density
+	Density:
+	Depth
+	Depth Jitter
+	Desaturate
+	Desaturate Monitor Colors By
+	Description
+	Deselect
+	Deselect All
+	Deselect Layers
+	Despeckle
+	Destination
+	Detail
+	Detailed
+	Detect Faces
+	Diameter:
+	Diamond
+	Diamond Gradient
+	Difference
+	Difference Clouds
+	Diffuse…
+	Diffusion
+	Digits
+	Dimensions:
+	DirectX 12
+	Direction
+	Direction of Stroke
+	Disable Filter Mask
+	Disable Layer Mask
+	Disable Smart Filters
+	Discard the embedded profile (don't color manage)
+	Discontiguous
+	Discord
+	Discretionary Ligatures
+	Disks
+	Dismiss
+	Displace…
+	Display P3
+	Display Text
+	Display p3
+	Dissolve
+	Distance
+	Distort
+	Distribute
+	Dither
+	Divide
+	Divide…
+	Do you want to save the changes you made to “{name}” before closing?
+	Do you want to save the changes you made to “{name}” before quitting?
+	Do you want to save you made to “{name}” before quitting?
+	Doc: {flat}/{layered}
+	Doc: {w} × {h} px
+	Document
+	Document Bounds
+	Document Dimensions
+	Document Profile
+	Document Size
+	Document Sizes
+	Dodge
+	Dodge Tool
+	Dodge/Burn
+	Don't Save
+	Done
+	Dots
+	Double click layer mask launches select and mask
+	Down
+	Drag (lasso) or click points (polygonal) · {add} add · {sub} subtract
+	Drag a crop box · drag inside to move · edges resize ({ratio} ratio, {centre} centre) · Space moves while drawing · {commit} commits · Esc cancels
+	Drag a rectangle around the object
+	Drag on the image to add a constraint; Shift for horizontal/vertical; right-click to delete.
+	Drag the arrow to set the angle, the dots to set the roundness
+	Drag to draw a gradient
+	Drag to move the active layer
+	Drag to move the active shape's path or the Work Path
+	Drag to move the layer
+	Drag to pan  ·  hold Space with any tool
+	Draw with the Pen tool (P) or make a work path from a selection.
+	Drop Shadow
+	Drop Shadow…
+	Drop an image or PSD anywhere to open it.
+	Drop shadow
+	Dual Brush
+	Duotone
+	Duotone…
+	Duplicate
+	Duplicate Frame
+	Duplicate Layer Comp
+	Duplicate Layers…
+	Duplicate Layer…
+	Duplicate Path
+	Duplicate style
+	Duplicated selection name
+	Duplicate…
+	Duration
+	Dust & Scratches…
+	Dynamic color sliders
+	Dynamics
+	EXIF
+	EXIF Version
+	East Asian Features
+	East asian
+	Edge
+	Edit
+	Edit Contents
+	Edit Pins
+	Edit Plane
+	Edit Toolbar…
+	Edit in Quick Mask Mode
+	Edit in Quick Mask Mode  (Q)
+	Edit in Standard Mode  (Q)
+	Effect cache mb
+	Effects
+	Efficiency
+	Efficiency: 100%
+	Ellipse Tool
+	Elliptical Marquee Tool
+	Email
+	Embed Color Profile
+	Embed profiles
+	Embedded Profile Mismatch
+	Emboss
+	Emboss…
+	Enable Layer Mask
+	Enable Smart Filters
+	Enable Timeline Quick Config
+	Enable Vector Mask
+	Enable airbrush-style build-up effects
+	Enable flick panning
+	Enable floating document window docking
+	Enable narrow options bar
+	Enabled
+	Enhance Edge
+	Enhanced Controls
+	Enhanced Controls…
+	Enter description…
+	Entire Font
+	Entropy
+	Equalize
+	Erase
+	Eraser
+	Eraser Tool
+	Error
+	Error File
+	Errors
+	Esc to cancel
+	Essentials
+	Exact
+	Exclude Overlapping Shapes
+	Exclusion
+	Exit
+	Expand
+	Expand All Groups
+	Expand Panel Group
+	Expand group  ({key}-click: all groups)
+	Expand group  (⌥-click: all groups)
+	Expand…
+	Expansion:
+	Export
+	Export As…
+	Export Contents…
+	Export Preferences…
+	Export Presets
+	Export clipboard
+	Export selected measurements (CSV)
+	Export/Import Presets…
+	Export…
+	Exposure
+	Exposure Program
+	Exposure and Gamma
+	Exposure:
+	Exposure…
+	Extensions
+	Extra Bold
+	Extra Large
+	Extra Light
+	Extra large
+	ExtraBold
+	ExtraLight
+	Extras
+	Extrude…
+	Eyedropper
+	Eyedropper Tool
+	F
+	Facet
+	Factor:
+	Fade
+	Fade steps
+	Fade…
+	Fast
+	Faux Bold
+	Faux Italic
+	Feather
+	Feather…
+	Fewer Points
+	Fibers…
+	Field Blur…
+	File
+	File Handling
+	File Handling…
+	File Info…
+	File Naming
+	File Settings
+	File path
+	Fill
+	Fill Content
+	Fill Layer
+	Fill Light
+	Fill Opacity
+	Fill Path
+	Fill new type layers with placeholder
+	Fill path with foreground color
+	Fill:
+	Fill…
+	Film & Video
+	Filter
+	Filter Gallery…
+	Filter for adjustment layers
+	Filter for pixel layers
+	Filter for shape layers
+	Filter for smart objects
+	Filter for type layers
+	Filter:
+	Find Edges
+	Find Layers
+	Find and Replace Text…
+	Finger Painting
+	First Color Readout
+	First Line Indent
+	Fish
+	Fisheye
+	Fit
+	Fit Artboard on Screen
+	Fit Image…
+	Fit Layer(s) on Screen
+	Fit Screen
+	Fit in View
+	Fit on Screen
+	Fixed
+	Fixed Ratio
+	Fixed Size
+	Flag
+	Flame…
+	Flash
+	Flatten All Layer Effects
+	Flatten All Masks
+	Flatten Frames Into Clips
+	Flatten Frames Into Layers
+	Flatten Image
+	Flip
+	Flip Canvas Horizontal
+	Flip Canvas Vertical
+	Flip Horizontal
+	Flip Vertical
+	Flip X
+	Flip X Jitter
+	Flip Y
+	Flip Y Jitter
+	Float All in Windows
+	Float in Window
+	Flow
+	Flow Jitter
+	Focal Length
+	Focal Length35mm
+	Focus Area…
+	Font
+	Font Preview Size
+	Font Size:
+	Font preview
+	Font size
+	Foreground
+	Foreground to Background
+	Foreground/Background Jitter
+	Format
+	Fractions
+	Fragment
+	Frame Duration
+	Frame Sync
+	Frame from Layers
+	Frame from Layers…
+	Frame {current} / {total}
+	Free
+	Free Transform
+	From
+	From Transparency
+	Full Screen Mode
+	Full Screen Mode With Menu Bar
+	Full Spherical
+	Full size tip
+	Fuzziness:
+	GPS
+	GPU
+	GPU backend
+	Gamma Correction
+	Gamma:
+	Gamut Warning
+	Gamut warning color
+	Gamut warning opacity
+	Gaussian Blur…
+	General
+	General Blend
+	General Brushes
+	General…
+	Generate
+	Generator enabled
+	Gif
+	GitHub
+	Global
+	Global Light…
+	Glossy
+	Glow Color
+	Glyph
+	Glyph Scaling
+	Glyphs
+	Glyphs Panel
+	Go to Layer
+	Gradient
+	Gradient Map
+	Gradient Map…
+	Gradient Options
+	Gradient Overlay
+	Gradient Overlay…
+	Gradient Tool
+	Gradients
+	Gradient…
+	Grain
+	Graphic Pen
+	Graphic and Web
+	Graphic and web
+	Graphics
+	Gray
+	Gray Gamma 2.2
+	Gray:
+	Grayscale
+	Grayscale Slider
+	Green
+	Greens
+	Grid
+	Grid  (⌘')
+	Grid color
+	Grid colors
+	Grid size
+	Grid style
+	Grid unit
+	Grid view
+	Gridline every
+	Group
+	Group Layer
+	Group Layers
+	Group from Layers…
+	Group name
+	Group · {n} layer
+	Group…
+	Grow
+	Guide color
+	Guide style
+	Guides
+	Guides, Grid & Slices
+	Guides, Grid & Slices…
+	Gutter
+	H
+	HDR Toning…
+	HDTV (Rec. 709)
+	HDV 1080/DVCPRO HD 720 (1.33)
+	HSB Color
+	HSB/HSL
+	HSL/Grayscale
+	Halftone Pattern
+	Hand
+	Hand Tool
+	Hanging Punctuation
+	Hard
+	Hard Light
+	Hard Mix
+	Hardness
+	Hardness:
+	Heal
+	Heal Auto
+	Heal Color
+	Heal Off
+	Heal On
+	Healing
+	Healing Brush Tool
+	Heart
+	Height
+	Height:
+	Help
+	Hidden Layers
+	Hide
+	Hide All
+	Hide All Effects
+	Hide Auto Slices
+	Hide Layers
+	Hide Properties
+	Hide Selection
+	Hide the layer's effects  ({key}-click: all layers)
+	Hide the layer's effects  (⌥-click: all layers)
+	High
+	High Pass…
+	Highlight Compression
+	Highlight Priority
+	Highlights
+	Highlights from:
+	Histogram
+	Histories
+	History
+	History Brush
+	History Brush Tool
+	History Log
+	History Log…
+	History states
+	Home
+	Horizontal
+	Horizontal Centers
+	Horizontal Type Tool
+	Horizontal scale
+	Horizontal type
+	Horizontally
+	Hue
+	Hue Jitter
+	Hue/Saturation
+	Hue/Saturation…
+	Huge
+	Humidity
+	Hyphenate
+	ISO
+	ISO Speed
+	Ignore
+	Ignore All
+	Ignore exif profile tag
+	Image
+	Image Assets
+	Image Processor…
+	Image Rotation
+	Image Size
+	Image Size:
+	Image Size…
+	Image interpolation
+	Image previews
+	Import
+	Import Brushes…
+	Import Brushes… (.abr)
+	Import Photoshop brushes (.abr)
+	Import Presets
+	Imported
+	Import…
+	In
+	Inches
+	Include ICC Profile
+	Indent First
+	Indent Left
+	Indent Right
+	Indent first line
+	Indent left margin
+	Indent right margin
+	Indexed
+	Indexed Color
+	Indexed Color…
+	Industry Standard
+	Inflate
+	Info
+	Info Options…
+	Initial Direction
+	Initial Direction of Stroke
+	Inner Bevel
+	Inner Glow
+	Inner Glow…
+	Inner Shadow
+	Inner Shadow…
+	Input:
+	Insert Blank Frame
+	Inside
+	Install Plug-in…
+	Integrations
+	Integrations…
+	Interface
+	Interface…
+	Interlaced
+	Internet Standard RGB
+	Interpolation
+	Interpolation:
+	Interpret Footage…
+	Intersect Shape Areas
+	Intersect with
+	Intersect with selection  ({key})
+	Intersect with selection  (⇧⌥)
+	Inverse
+	Inverse Selection
+	Invert
+	Invert All
+	Invert has no settings.
+	Invert…
+	Iris Blur…
+	Isolate Layers
+	Italic
+	Join the ArtCraft Discord…
+	Join us on Discord
+	Jpeg quality
+	Jpg
+	Justification
+	Justify
+	Justify all
+	Justify last centered
+	Justify last left
+	Justify last right
+	Keep proportions
+	Keep view in sync
+	Keeps the current texture when switching presets.
+	Kerning
+	Keyboard Shortcuts
+	Keyboard Shortcuts and Menus
+	Keyboard Shortcuts…
+	Keywords
+	Kind
+	Kurtosis
+	Lab
+	Lab Color
+	Label Size
+	Labels
+	Lanczos (sharp)
+	Landscape
+	Landscape, 10 x 8
+	Landscape, 6 x 4
+	Landscape, 7 x 5
+	Language
+	Language Options
+	Large
+	Large tabs
+	Lasso
+	Lasso Tool
+	Last Document State
+	Last Filter
+	Last Modified
+	Layer
+	Layer Comp
+	Layer Comps
+	Layer Comps to Files…
+	Layer Content Options…
+	Layer Count
+	Layer Edges
+	Layer From Background…
+	Layer Knocks Out Drop Shadow
+	Layer Mask
+	Layer Style
+	Layer from Background…
+	Layer via Copy
+	Layer via Cut
+	Layers
+	Layers to Files…
+	Layer…
+	Layout
+	Leading
+	Leading (set to the font size × auto-leading when Auto)
+	Leave as is (don't color manage)
+	Left
+	Left Edges
+	Left align text
+	Legacy Macintosh RGB
+	Legacy compositing
+	Legal
+	Length:
+	Lens
+	Lens Blur…
+	Lens Corrections
+	Lens Correction…
+	Lens Flare…
+	Lens Info
+	Letter
+	Letter Spacing
+	Level
+	Levels
+	Levels…
+	Libraries
+	Ligature
+	Light
+	Light Source
+	Light gray
+	Lighten
+	Lighter Color
+	Lighting Effects…
+	Lightness
+	Lights
+	Limit Playback
+	Limits:
+	Line
+	Line Tool
+	Linear
+	Linear Burn
+	Linear Dodge (Add)
+	Linear Gradient
+	Linear Height
+	Linear Light
+	Lines
+	Link Layer Mask
+	Link Layers
+	Link Vector Mask
+	Link layers
+	Link the mask to the layer
+	Link width and height
+	Link with Layer
+	Liquify is not open
+	Liquify…
+	List view
+	Load
+	Load 3D LUT…
+	Load Default Type Styles
+	Load Files into Stack…
+	Load Photoshop brushes (.abr)
+	Load Selection
+	Load Selection…
+	Load channel as selection
+	Load path as a selection
+	Load…
+	Localize Color Clusters
+	Localized Color Clusters
+	Location
+	Lock
+	Lock Guides
+	Lock Layers…
+	Lock Slices
+	Lock Workspace
+	Lock all
+	Lock image pixels
+	Lock layer
+	Lock position
+	Lock transparent pixels
+	Lock:
+	Lock: keep these settings when picking another preset
+	Log Errors To File
+	Logical Length:
+	Logical Units:
+	Loop
+	Lorem Ipsum
+	Low
+	Lowercase extension
+	Luminance
+	Luminance Detail
+	Luminance Smoothness
+	Luminosity
+	Mac Crisp
+	Mac LCD
+	Mac OS
+	Mac Sharp
+	Mac Smooth
+	Mac Strong
+	Magenta
+	Magenta  ·  Green
+	Magentas
+	Magic Eraser Tool
+	Magic Wand Tool
+	Magnetic Lasso
+	Maintain aspect ratio
+	Make
+	Make Selection
+	Make Work Path
+	Make work path from selection
+	Marker Size
+	Marquee
+	Mask
+	Mask All
+	Mask All Objects
+	Mask Options
+	Masked Areas
+	Masking
+	Master
+	Match All
+	Match Color…
+	Match Location
+	Match Rotation
+	Match Zoom
+	Matte
+	Matting
+	Maximize psd compatibility
+	Maximum
+	Maximum…
+	Mean
+	Mean:
+	Measure
+	Measurement Log
+	Measurement Scale
+	Measurement Scale Marker
+	Median
+	Median:
+	Median…
+	Medium
+	Medium gray
+	Memory usage mb
+	Menus
+	Menus…
+	Merge Down
+	Merge Layers
+	Merge Shape Components
+	Merge Visible
+	Merge to HDR Pro…
+	Mesh
+	Mesh Size
+	Metadata
+	Metal
+	Metering Mode
+	Method
+	Metrics
+	Mezzotint…
+	Middle Eastern & South Asian Composer
+	Middle Eastern Features
+	Midpoint
+	Midtones
+	Midtones from:
+	Midtones to:
+	Migrate Presets
+	Millimeters
+	Minimalistic
+	Minimum
+	Minimum Depth
+	Minimum Diameter
+	Minimum Roundness
+	Minimum…
+	Missing Profiles: Ask When Opening
+	Missing glyph protection
+	Mix
+	Mix Jitter
+	Mixer Brush
+	Mobile
+	Mode
+	Mode:
+	Model
+	Modern
+	Modifier Keys
+	Modify
+	Modify Date
+	Monitor RGB
+	Monochrome
+	More Points
+	More panels
+	Mosaic…
+	Motion
+	Motion Blur…
+	Mouse Controls
+	Mouse Coordinates
+	Move
+	Move Group Down
+	Move Group Up
+	Move Tool
+	Move effect layer down
+	Move effect layer up
+	Move to
+	Multichannel
+	Multiply
+	My Brushes
+	NTSC (1953)
+	NTSC Colors
+	Name
+	Name:
+	Navigator
+	Nearest Neighbor
+	Nearest Neighbor (hard edges)
+	Nearest neighbor
+	Neutrals
+	Never
+	New
+	New Adjustment Layer
+	New Blank Video Layer
+	New Brush
+	New Channel
+	New Document
+	New Fill Layer
+	New Group
+	New Guide Layout…
+	New Guides From Shape
+	New Guide…
+	New Layer Based Slice
+	New Layer Comp
+	New Layer from Brush
+	New Layer…
+	New Path
+	New Selection
+	New Shape Layer
+	New Size
+	New Smart Object via Copy
+	New Snapshot
+	New Style…
+	New Tool Preset
+	New Type Layer
+	New Video Group
+	New Video Layer
+	New Video Layer from File…
+	New Window for Document
+	New Workspace
+	New Workspace…
+	New channel only
+	New document…
+	New document…     ⌘N
+	New effect layer
+	New selection
+	Newspaper
+	New…
+	Next Theme
+	Next frame
+	Next note
+	No Color
+	No Color Management
+	No Dither
+	No Layer Comps
+	No author
+	No brush presets
+	No character style
+	No document
+	No matching commands
+	No path to make a selection from: draw one with the Pen tool or select one in the Paths panel.
+	No presets for the current tool.
+	No presets of this type.
+	No properties
+	No tool presets.
+	Noise
+	Noise Reduction
+	None
+	Nonlinear History
+	Normal
+	Normal tip
+	Not in Dictionary:
+	Note Paper
+	Note Tool
+	Note tool
+	Notes
+	Notes…
+	OK
+	Object Name / Title
+	Object Selection Tool
+	Off
+	Off: the speed of the pointer sets the spacing
+	Offset
+	Offset…
+	Oil Paint…
+	Oldstyle
+	Only Web Colors
+	Opacity
+	Opacity Jitter
+	Opacity Mask
+	Opacity:
+	Open
+	Open As…
+	Open Recent
+	Open a document to define variables.
+	Open a document to select a colour range.
+	Open a document to use the timeline.
+	Open as smart object
+	Open documents as tabs
+	OpenGL
+	OpenType
+	Opening {name}
+	Opening {name}…
+	Opening…
+	Open…
+	Open…     ⌘O
+	Operation
+	Optical
+	Optimized
+	Option-click to define a source point to clone from
+	Options
+	Orange
+	Ordinals
+	Orientation
+	Original
+	Original Ratio
+	Ornaments
+	Other
+	Other…
+	Out
+	Out Of Gamut
+	Outer Bevel
+	Outer Glow
+	Outer Glow…
+	Output Channel:
+	Output Levels:
+	Output:
+	Outside
+	Overlay
+	Overlay Color
+	Overlay Opacity
+	Overlay: Rule of Thirds
+	Override Action "Save" Commands
+	Override Pressure
+	Override Rotation
+	Override Tilt
+	Overscroll
+	PAL/SECAM
+	PDF Presentation…
+	PRESET DETAILS
+	PSD
+	Package…
+	Paint Bucket Tool
+	Paint Overlay
+	Painting
+	Paints from the document's opening state
+	Panel Options…
+	Panel locations are saved in the workspace. Keyboard shortcuts, menus and toolbar are optional.
+	Panels
+	Paper
+	Paragraph
+	Paragraph Panel
+	Paragraph Styles
+	Paragraph Styles Panel
+	Pass Through
+	Paste
+	Paste Into
+	Paste Layer Style
+	Paste Lorem Ipsum
+	Paste Outside
+	Paste Special
+	Paste in Place
+	Patch
+	Path
+	Path Blur…
+	Path Selection Tool
+	Path to Illustrator…
+	Path:
+	Paths
+	Paths to Illustrator…
+	Pattern
+	Pattern Overlay
+	Pattern Overlay…
+	Pattern Preview
+	Pattern Size
+	Pattern Stamp
+	Patterns
+	Pattern…
+	Pause
+	Pen
+	Pen Pressure
+	Pen Tilt
+	Pen Tool
+	Pencil
+	Pencil Tool
+	Percent
+	Perceptual
+	Performance
+	Performance…
+	Perspective
+	Perspective Crop
+	Perspective Warp
+	Perspective Warp is not active
+	Perspective Warp: draw planes along the image's perspective, then switch to Warp
+	Phone
+	Photo
+	Photo (2 × 3 in)
+	Photo (4 × 6 in)
+	Photo (5 × 7 in)
+	Photo (8 × 10 in)
+	Photo Filter
+	Photo Filter…
+	PhotoCraft
+	PhotoCraft Manages Colors
+	PhotoCraft Website
+	PhotoCraft on GitHub
+	PhotoCraft website
+	PhotoCraft — an open-source, native image editor written in Rust.
+	Photocopy
+	Photography
+	Photomerge…
+	Picas
+	Picture Frame…
+	Picture Package…
+	Pillow Emboss
+	Pin Depth:
+	Pin Light
+	Pinch…
+	Pixel
+	Pixel Art
+	Pixel Art Preview
+	Pixel Aspect Ratio
+	Pixel Aspect Ratio Correction
+	Pixel Grid
+	Pixel Layer
+	Pixel Length:
+	Pixel Replacement
+	Pixelate
+	Pixels
+	Pixels/Centimeter
+	Pixels/Inch
+	Pixels:
+	Place Embedded…
+	Place Linked…
+	Place Scale Marker…
+	Plaster
+	Play
+	Play Once
+	Play selection
+	Plug-ins
+	Plug-ins…
+	Png
+	Point size
+	Pointillize…
+	Points
+	Polar Coordinates…
+	Polygon Tool
+	Polygonal Lasso Tool
+	Portrait
+	Portrait, 4 x 6
+	Portrait, 5 x 7
+	Position
+	Position and Size
+	PostScript (72 points/inch)
+	Postcard
+	Poster
+	Posterize
+	Posterize…
+	Precise
+	Preferences
+	Preserve Details
+	Preserve Luminosity
+	Preserve Transparency
+	Preserve details
+	Preset
+	Preset Manager…
+	Preset Name:
+	Preset Type
+	Preset:
+	Presets
+	Presets:
+	Press keys…
+	Pressure
+	Pressure for Opacity
+	Pressure for Size
+	Prevent auto-nesting in and out of Artboards and Frames
+	Preview
+	Previous frame
+	Previous note
+	Print
+	Print One Copy
+	Print Size
+	Print resolution
+	Printer
+	Printer Manages Colors
+	Printer Setup
+	Printing Marks
+	Print…
+	Pro
+	Pro (Dark)
+	Pro (Medium Gray)
+	Pro Medium Gray Theme
+	Pro Theme
+	Pro medium
+	Pro photo
+	ProPhoto
+	ProPhoto RGB
+	Profile Mismatches: Ask When Opening
+	Progressive
+	Promote
+	Proof Colors
+	Proof Setup
+	Properties
+	Protect Detail
+	Protect Foreground Color
+	Protect Texture
+	Protect Tones
+	Province / State
+	Proximity Match
+	Public Domain
+	Pulled String Mode
+	Punctuation
+	Puppet Warp
+	Puppet Warp is not active
+	Purge
+	Purity
+	Purple
+	Quality
+	Quick Actions
+	Quick Export As PNG
+	Quick Export as PNG
+	Quick Mask
+	Quick Selection
+	Quick Selection Tool
+	Quick Sync
+	Quick export format
+	Quick export location
+	RGB
+	RGB Color
+	RGB:
+	Radial
+	Radial Blur…
+	Radial Gradient
+	Radius
+	Radius:
+	Range
+	Range:
+	Rasterize
+	Rasterize Fill Content
+	Rasterize Layer
+	Rasterize Shape
+	Rasterize Smart Object
+	Rasterize Type
+	Rasterize Type Layer
+	Rate
+	Ratio
+	Raw Data
+	Raw Defaults…
+	Reading…
+	Recent
+	Recent Items
+	Recent file count
+	Recent files
+	Recent fonts
+	Recently Used
+	Reconstruct
+	Record Measurements
+	Record ● a sequence of edits, then play ▶ it on any document.
+	Recover on launch
+	Recovery
+	Rectangle
+	Rectangle Tool
+	Rectangular Marquee Tool
+	Red
+	Red Eye
+	Redefine style by current selection
+	Redo
+	Reds
+	Reduce Noise…
+	Reference point location
+	Reflected
+	Reflected Gradient
+	Registration Marks
+	Regular
+	Relative
+	Relative Colorimetric
+	Release Clipping Mask
+	Relink to File…
+	Reload Frame
+	Remember workspace changes
+	Remove
+	Remove All Pins
+	Remove Background
+	Remove Black Matte
+	Remove Planes
+	Remove Warp Split
+	Remove White Matte
+	Remove stop
+	Remove variable
+	Rename
+	Rename Brush…
+	Rename Group…
+	Rename Layer
+	Rename Layer Comp
+	Rename Layer…
+	Rename Tool Preset…
+	Rename…
+	Render
+	Render Video…
+	Repeat
+	Replace All Missing Fonts
+	Replace Color…
+	Replace Contents…
+	Replace Footage…
+	Report an Issue…
+	Resample
+	Reselect
+	Reset
+	Reset Alignment
+	Reset All to Defaults
+	Reset GPU Backend
+	Reset Section
+	Reset Transform
+	Reset Workspace
+	Reset the brush to the defaults
+	Reset to defaults
+	Resize image during place
+	Resolution
+	Resolution:
+	Resolution: {dpi} pixels/inch
+	Resolve Missing Fonts…
+	Restore All
+	Restore All Frames
+	Restore Defaults
+	Restore Frame
+	Restore last viewed comp
+	Restore original size
+	Restrictive (Web)
+	Result
+	Reticulation
+	Reveal All
+	Reveal Selection
+	Reveal in Finder
+	Reverse
+	Revert
+	Revert “{name}” to the last saved version? Your changes will be lost.
+	Right
+	Right Edges
+	Right align text
+	Right click with painting tools
+	Rigid
+	Ripple…
+	Rise
+	Roman
+	Roman Hanging Punctuation
+	Rotate
+	Rotate 180°
+	Rotate 90° Clockwise
+	Rotate 90° Counter Clockwise
+	Rotate Auto
+	Rotate Fixed
+	Rotate View
+	Rotate view with trackpad
+	Rotate:
+	Rotation
+	Roughness
+	Roundness
+	Roundness Jitter
+	Roundness:
+	Ruler
+	Ruler Tool
+	Ruler Units
+	Rulers
+	Rulers  (⌘R)
+	Rulers & Grids
+	SMPTE C
+	Same folder
+	Sample All Layers
+	Sample:
+	Sample: foreground colour
+	Sampled Colors
+	Sampler
+	Sampling: Background Swatch
+	Sampling: Continuous
+	Sampling: Once
+	Satin
+	Satin…
+	Saturate
+	Saturation
+	Saturation Jitter
+	Save
+	Save As…
+	Save Default Type Styles
+	Save HTML and Images
+	Save Pixel Aspect Ratio
+	Save Preset…
+	Save Selection
+	Save Selection…
+	Save a Copy…
+	Save as PDF
+	Save for Web (Legacy)…
+	Save in background
+	Save selection as channel
+	Saved
+	Saved Multichannel
+	Save…
+	Scale
+	Scale Effects…
+	Scale Horizontally
+	Scale Vertically
+	Scale to Fit Media
+	Scatter
+	Scattering
+	Scratch Disks
+	Scratch Disks…
+	Scratch Sizes
+	Scratch disks
+	Scratch: {size}
+	Screen
+	Screen Mode
+	Screen resolution
+	Script Events Manager…
+	Scripts
+	Scrubby Zoom
+	Scrubby slider acceleration
+	Search
+	Search Brushes
+	Search commands
+	Search commands (⌘K)
+	Search commands, tools and panels…
+	Search fonts
+	Search…
+	Second Color Readout
+	Select
+	Select All
+	Select All Layers
+	Select Data Points
+	Select Data Points…
+	Select Folder…
+	Select Linked Layers
+	Select Plane
+	Select Similar Colors
+	Select Subject
+	Select a type layer or click into text to insert glyphs
+	Select a type layer to edit its character and paragraph settings.
+	Select and Mask…
+	Select text to apply a character style
+	Select:
+	Selected Areas
+	Selection
+	Selection Edges
+	Selections
+	Selective
+	Selective Color
+	Selective Color…
+	Semi Bold
+	SemiBold
+	Send Backward
+	Send the selected pin backward
+	Send to Back
+	Sessions only
+	Set Measurement Scale…
+	Set New Snapshot as Default
+	Set Start Timecode…
+	Set additional smoothing options
+	Set background color
+	Set foreground color
+	Set painting symmetry options
+	Set shape fill type
+	Set shape stroke type
+	Set the text color
+	Settings
+	Settings:
+	Settings…
+	Shadows
+	Shadows up to:
+	Shadows/Highlights…
+	Shape
+	Shape Blur…
+	Shape Dynamics
+	Shape Layer
+	Shape:
+	Shapes
+	Sharp
+	Sharpen
+	Sharpen Edges
+	Sharpen More
+	Sharpen Tool
+	Sharpen for
+	Sharpening
+	Sharpness
+	Shear…
+	Shell Lower
+	Shell Upper
+	Shift
+	Shortcut removed.
+	Show
+	Show All Menu Items
+	Show Altered Video
+	Show Backdrop
+	Show Extras Options
+	Show Extras Options…
+	Show Guides
+	Show Guides  (⌘;)
+	Show Mask
+	Show Mesh
+	Show New Snapshot Dialog by Default
+	Show Overlay
+	Show Transform Controls
+	Show channels in color
+	Show crosshair in brush tip
+	Show extension panels
+	Show font names in english
+	Show menu colors
+	Show only crosshair while painting
+	Show or hide the Notes panel
+	Show slice numbers
+	Show the layer mask as an overlay
+	Show the layer's effects  ({key}-click: all layers)
+	Show the layer's effects  (⌥-click: all layers)
+	Show tooltips
+	Show transformation values
+	Show:
+	Shutter Speed
+	Sides
+	Sides:
+	Similar
+	Single Word Justification
+	Size
+	Size Jitter
+	Size:
+	Skew
+	Skewness
+	Sky
+	Slice Options…
+	Slice Select Tool
+	Slice Tool
+	Slice color
+	Slices
+	Slices From Guides
+	Slices are locked (View › Lock Slices)
+	Small
+	Small Caps
+	Smart Blur…
+	Smart Filter
+	Smart Filters
+	Smart Guides
+	Smart Object
+	Smart Object Layer
+	Smart Objects
+	Smart Sharpen…
+	Smart guide color
+	Smart quotes
+	Smooth
+	Smoothing
+	Smooth…
+	Smudge Tool
+	Snap
+	Snap To
+	Snap vector tools and transforms to pixel grid
+	Snapshot 1
+	Snapshots
+	Soft
+	Soft Light
+	Soften
+	Software
+	Solarize
+	Solid Color…
+	Source
+	Source: not set ({key}-click with Clone Stamp)
+	Source: set
+	Space After
+	Space Before
+	Spacing
+	Spacing:
+	Spell check complete.
+	Spherize…
+	Spin Blur…
+	Split Toning
+	Split Warp Crosswise
+	Split Warp Horizontally
+	Split Warp Vertically
+	Split at Playhead
+	Split:
+	Sponge Tool
+	Spot Channel
+	Spot Color
+	Spot Healing
+	Spot Healing Brush Tool
+	Spot:
+	Spread
+	Square
+	Square, 12 x 12
+	Square, 5 x 5
+	Squeeze
+	Srgb
+	Stack Mode
+	Stamp
+	Standard
+	Standard Deviation
+	Standard Ligatures
+	Standard Screen Mode
+	Star ratio
+	Statistics…
+	Status Information
+	Std Dev:
+	Step Backward
+	Step Forward
+	Stop
+	Stop For Errors
+	Stop playing/recording
+	Straighten
+	Straighten Layer
+	Strength:
+	Strikethrough
+	Stroke
+	Stroke Catch-up
+	Stroke Path
+	Stroke path with brush
+	Stroke:
+	Stroke…
+	Strong
+	Studio
+	Studio (Dark)
+	Studio (Light)
+	Studio Light Theme
+	Studio Theme
+	Studio light
+	Style
+	Style Options
+	Style Options…
+	Style: Normal
+	Styles
+	Stylistic Alternates
+	Stylize
+	Stylus Wheel
+	Subdivisions
+	Subject
+	Subject Distance
+	Subscript
+	Subtract
+	Subtract Front Shape
+	Subtract from
+	Subtract from Sample
+	Subtract from selection  ({key})
+	Subtract from selection  (⌥)
+	Suggestions:
+	Summation
+	Superscript
+	Supplemental Categories
+	Surface Blur…
+	Swap colours (X)
+	Swaps height and width
+	Swash
+	Swatches
+	Switch between free transform and warp modes
+	Switch theme
+	Symbols
+	System
+	System Info
+	System Info…
+	Tabloid
+	Target Path
+	Technology Previews
+	Technology Previews…
+	Temperature
+	Tetrahedral
+	Text Position:
+	Text Replacement
+	Text color
+	Text engine
+	Text file
+	Texture
+	Texture Each Tip
+	The current gradient (pick one in Window › Gradients)
+	Theme
+	These settings aren't available in PhotoCraft yet.
+	Thin
+	Threshold
+	Threshold Level
+	Threshold…
+	Thumbnail size (smallest: list)
+	Tile
+	Tile All Horizontally
+	Tile All Vertically
+	Tiles…
+	Tilt
+	Tilt Scale
+	Tilt X
+	Tilt Y
+	Tilt-Shift…
+	Time
+	Timecode
+	Timeline
+	Timing
+	Tint
+	Tiny
+	Titling Alternates
+	Toggle Last State
+	Toggle count group visibility
+	Toggle reference point
+	Toggle text orientation
+	Toggle the Brush Settings panel  (F5)
+	Toggle visibility
+	Tolerance
+	Tolerance:
+	Tone Curve
+	Tone:
+	Tool Presets
+	Toolbar
+	Toolbars
+	Toolbar…
+	Tools
+	Tools…
+	Top
+	Top Edges
+	Torn Edges
+	Total Ink
+	Total:
+	Touch gestures
+	Trace Contour…
+	Tracking
+	Tracking (1/1000 em)
+	Traditional (72.27 points/inch)
+	Transfer
+	Transform
+	Transform Selection
+	Transmission Reference
+	Transparency
+	Transparency & Gamut
+	Transparency & Gamut…
+	Transparent
+	Trap…
+	Tree…
+	Triangle Tool
+	Trilinear
+	Trim…
+	Twirl…
+	Twist
+	Type
+	Type Layer
+	Type Options
+	Type Styles
+	Type units
+	Type:
+	Type…
+	UI font size
+	UI scale
+	URLs
+	Ultra Bold
+	Ultra Light
+	Uncoated CMYK
+	Underline
+	Undo
+	Ungroup Layers
+	Unite Shapes
+	Units
+	Units & Rulers
+	Units & Rulers…
+	Unix
+	Unknown
+	Unlink Layer Mask
+	Unlink the mask from the layer
+	Unlock: picking a preset replaces these settings
+	Unsaved changes
+	Unsharp Mask…
+	Untagged {mode}
+	Untitled
+	Untitled-1
+	Update All Modified Content
+	Update All Text Layers
+	Update Layer Comp
+	Update Modified Content
+	Update layer comp (visibility, position and appearance)
+	Urgency
+	Use Default
+	Use Legacy
+	Use Measurement Scale
+	Use additional plugins folder
+	Use esc to commit
+	Use gpu
+	Use legacy free transform
+	Use shift key for tool switch
+	Use tablet pressure
+	Use the embedded profile (instead of the working space)
+	Uses the foreground and background colors.
+	Uses the foreground and background colours.
+	Vanishing Point…
+	Variable Data Sets…
+	Variables
+	Variables bind a layer's visibility, text or pixels to a named data slot.
+	Variance
+	Vary round brush hardness on hud
+	Vector Mask
+	Vector Mask from Current Path
+	Version {version}
+	Vertical
+	Vertical Centers
+	Vertical scale
+	Vertical type
+	Vertically
+	Vibrance
+	Vibrance…
+	Video
+	Video Cache
+	Video Frames to Layers…
+	Video Layers
+	View
+	View Options
+	View menu
+	Vignetting
+	Violet, Orange
+	Visibility
+	Visible
+	Vivid Light
+	Vulkan
+	W
+	WIA Support…
+	Wand
+	Warp
+	Warp Text…
+	Warp:
+	Water Paper
+	Watercolour look: lighter interior, darker rims.
+	Wave
+	Wave…
+	Web
+	Web Color
+	Web Large
+	Web Minimum
+	Web Most Common
+	Web Photo Gallery…
+	Web Snap
+	WebP (lossless)
+	Webp
+	Weight
+	Weight:
+	Wet
+	Wet Edges
+	Wetness Jitter
+	White
+	White Balance: As Shot
+	Whites
+	Wide Gamut RGB
+	Width
+	Width and Height
+	Width:
+	Window
+	Windows
+	Windows LCD
+	Wind…
+	Word Spacing
+	Work Path
+	Working Black Plate
+	Working CMY Plate
+	Working CMYK
+	Working Cyan Plate
+	Working Gray Plate
+	Working Magenta Plate
+	Working Space
+	Working Spaces
+	Working Yellow Plate
+	Working…
+	Workspace
+	Workspace…
+	World ready
+	X
+	Y
+	Yellow
+	Yellow  ·  Blue
+	Yellows
+	ZigZag…
+	Zoom
+	Zoom In
+	Zoom Out
+	Zoom Tool
+	Zoom clicked point to center
+	Zoom in
+	Zoom out
+	Zoom resizes windows
+	Zoom with scroll wheel
+	Zoom with trackpad pinch
+	command or shortcut
+	current
+	image file path
+	modified
+	name
+	new
+	sRGB
+	sRGB IEC61966-2.1
+	shortcut
+	{added}, {removed} subtracted
+	{key} to subtract
+	{key}-click to set the source
+	{mode} Color · {bits} bit
+	{name} Properties
+	{name} options
+	{w} px x {h} px ({ppi} ppi)
+	{zoom}%
+	↑↓ navigate   {key} run   esc close
+	↑↓ navigate   ↵ run   esc close
+@id	edit.purge.undo
+@id	edit.stroke
+@id	edit.transform.scale
+@id	select.all
+@plural	Group · {n} layer|Group · {n} layers
+@plural	{n} Layer|{n} Layers
+@plural	{n} item|{n} items
+@plural	{n} layer|{n} layers
+@plural	{n} sample|{n} samples

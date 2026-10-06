@@ -168,6 +168,12 @@ intents, black point compensation). It ships CC0 built-in profiles, including a 
 the live command registry (`menus::is_live`) and rewrites [`docs/parity.md`](parity.md). The test
 `parity::tests::parity_does_not_regress` fails if the live count drops below `parity::FLOOR`.
 
+`cargo xtask i18n-coverage` prints the UI translation coverage for each language in the
+`crates/ui-egui/src/i18n/mod.rs` registry, in stable language-code order. It compares registered
+catalog entries with `xtask/i18n-english-keys.tsv`, and fails on malformed rows, duplicate keys,
+unknown keys, or UI `tl!` keys missing from the inventory. Update that inventory when English UI
+keys change. Unregistered locale TSV files are ignored.
+
 ## Testing strategy
 
 - **Unit and property tests** in every crate. proptest is used for tile COW, regions and codecs.
