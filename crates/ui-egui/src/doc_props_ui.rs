@@ -35,9 +35,9 @@ pub const MODES: &[(ColorMode, &str, &str)] = &[
 ];
 
 pub const DEPTHS: &[(SampleType, &str, &str)] = &[
-    (SampleType::U8, "8 Bits/Channel", "image.mode.bits8"),
-    (SampleType::U16, "16 Bits/Channel", "image.mode.bits16"),
-    (SampleType::F32, "32 Bits/Channel", "image.mode.bits32"),
+    (SampleType::U8, "8 Bits/Channel (Integer)", "image.mode.bits8"),
+    (SampleType::U16, "16 Bits/Channel (Integer)", "image.mode.bits16"),
+    (SampleType::F32, "32 Bits/Channel (Floating Point)", "image.mode.bits32"),
 ];
 
 /// Ruler units offered in the Rulers & Grids dropdown (`unitsAndRulers.rulers` values).
@@ -313,6 +313,23 @@ mod tests {
     fn document_dropdowns_map_to_live_mode_commands() {
         for id in MODES.iter().map(|m| m.2).chain(DEPTHS.iter().map(|d| d.2)) {
             assert!(photocraft_engine::commands::find(id).is_some(), "{id} is not an engine command");
+        }
+    }
+
+    #[test]
+    fn image_mode_depth_labels_match_sample_types_and_are_translated() {
+        assert_eq!(
+            DEPTHS.iter().map(|(sample, label, _)| (*sample, *label)).collect::<Vec<_>>(),
+            [
+                (SampleType::U8, "8 Bits/Channel (Integer)"),
+                (SampleType::U16, "16 Bits/Channel (Integer)"),
+                (SampleType::F32, "32 Bits/Channel (Floating Point)"),
+            ]
+        );
+        for lang in crate::i18n::Lang::all().filter(|lang| lang.code() != "en") {
+            for (_, label, id) in DEPTHS {
+                assert_ne!(crate::i18n::tr_id(lang, id, label), *label, "{}: {label}", lang.code());
+            }
         }
     }
 }
