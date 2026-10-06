@@ -2071,3 +2071,7 @@
 
 # Command-id override: under Edit > Purge a bare "Deshacer" reads as an action, not the history.
 @id	edit.purge.undo	Historial de deshacer
+
+	Patch Tool	Herramienta Parche
+	Patch:	Parche:
+	Lasso around an area, then drag the selection	Rodee un área con el lazo y arrastre la selección
