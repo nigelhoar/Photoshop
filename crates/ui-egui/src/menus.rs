@@ -112,6 +112,16 @@ pub fn invoke(app: &mut PhotocraftApp, ctx: &egui::Context, id: &str, params: Va
 
 /// [`invoke`] without the unsaved-changes prompt, for once the user has already answered it.
 pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id: &str, params: Value) -> Result<Value, String> {
+    // While transforming, ⌘Z / ⇧⌘Z step through the box's drags, never the document's history
+    // underneath the live preview (Photoshop).
+    if matches!(id, "edit.undo" | "edit.redo") && app.ui.transform.is_some() {
+        crate::transform_tool::step(app, id == "edit.undo");
+        return Ok(json!({"transform": app.ui.transform}));
+    }
+    // A floating selection drops first (or, on Undo, goes back) before UI-only commands too.
+    if crate::floating::before_command(app, id) {
+        return Ok(json!({"floating": "returned"}));
+    }
     // Help › Discord, website, GitHub, Report an Issue.
     if let Some(url) = crate::links::url_for(id) {
         return Ok(crate::links::open(app, ctx, url));
@@ -449,6 +459,12 @@ fn saves_in_place(path: &str) -> bool {
 }
 
 pub fn is_enabled(app: &PhotocraftApp, id: &str) -> bool {
+    if matches!(id, "edit.undo" | "edit.redo") && app.ui.transform.is_some() {
+        return crate::transform_tool::can_step(app, id == "edit.undo");
+    }
+    if id == "edit.undo" && crate::floating::active(app).is_some() {
+        return true;
+    }
     // Photoshop greys these for the Background layer, other layer kinds or single-layer documents.
     if crate::enable_rules::disabled(app, id) {
         return false;
@@ -492,7 +508,12 @@ pub fn is_enabled(app: &PhotocraftApp, id: &str) -> bool {
         i if (i.starts_with("view.zoom") || i == "view.fitOnScreen" || i == "view.actualPixels") || i == "window.newWindowForDocument" => {
             app.session.active().is_some()
         }
-        "edit.freeTransform" | "edit.transform.scale" | "edit.transform.rotate" | "edit.transform.skew" | "edit.transform.distort" | "edit.transform.perspective" => match &app.ui.transform {
+        "edit.freeTransform"
+        | "edit.transform.scale"
+        | "edit.transform.rotate"
+        | "edit.transform.skew"
+        | "edit.transform.distort"
+        | "edit.transform.perspective" => match &app.ui.transform {
             Some(t) => t.warp.is_none(),
             None => app.session.active().and_then(|s| s.active_layer).is_some(),
         },
@@ -746,20 +767,41 @@ pub fn menu_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) -> f32 {
             nav.bar_bottom = Some(ui.max_rect().bottom());
             let mut buttons = Vec::with_capacity(TOP_MENUS.len());
             for top in TOP_MENUS {
-                let r = ui.menu_button(egui::RichText::new(crate::i18n::tr(lang, top)).color(t.text_dim), |ui| {
-                    let items = items.get_or_init(|| menu_items(app_ref));
-                    let mine: Vec<&MenuItem> = items.iter().filter(|i| i.path.first().map(String::as_str) == Some(top)).collect();
-                    ui.set_min_width(220.0);
-                    if top == "Help" {
-                        help_search(ui, items, &mut clicked, &mut nav);
-                    }
-                    if mine.is_empty() {
-                        ui.weak(crate::i18n::tr(lang, "(coming soon)"));
-                    }
-                    render_level(ui, &mine, 1, &mut clicked, &mut nav);
-                });
-                press_to_open(ui.ctx(), &r.response);
-                buttons.push(r.response);
+                // egui's menu_button toggles on release; Mac menus open on the press (one gesture
+                // can press, drag to an item and release), so the title drives its popup itself.
+                let title = ui.add(egui::Button::new(egui::RichText::new(crate::i18n::tr(lang, top)).color(t.text_dim)));
+                // The bar's close behaviour and style, as a menu (not bar) config so submenus inside
+                // render as submenus.
+                let bar = egui::containers::menu::MenuConfig::find(ui);
+                let config = egui::containers::menu::MenuConfig::new().close_behavior(bar.close_behavior).style(bar.style.clone());
+                let open = title_press(ui.ctx(), &title);
+                // The release ending the press that opened this menu is a click "outside" the
+                // popup: it must not close it again.
+                let opening = title.clicked() && ui.ctx().data(|d| d.get_temp::<bool>(press_gesture_id())).unwrap_or(false);
+                let close = if opening { egui::PopupCloseBehavior::IgnoreClicks } else { config.close_behavior };
+                egui::Popup::menu(&title)
+                    .open_memory(open)
+                    .close_behavior(close)
+                    .style(config.style.clone())
+                    .info(egui::UiStackInfo::new(egui::UiKind::Menu).with_tag_value(egui::containers::menu::MenuConfig::MENU_CONFIG_TAG, config))
+                    .show(|ui| {
+                        let items = items.get_or_init(|| menu_items(app_ref));
+                        let mine: Vec<&MenuItem> = items.iter().filter(|i| i.path.first().map(String::as_str) == Some(top)).collect();
+                        ui.set_min_width(220.0);
+                        if mine.is_empty() {
+                            ui.weak(crate::i18n::tr(lang, "(coming soon)"));
+                        }
+                        if top == "Help" {
+                            // The search field scrolls with the rows, as part of the menu's content.
+                            crate::menu_nav::level(ui, 1, &mut nav, |ui, nav| {
+                                help_search(ui, items, &mut clicked, nav);
+                                render_level_rows(ui, &mine, 1, &mut clicked, nav);
+                            });
+                        } else {
+                            render_level(ui, &mine, 1, &mut clicked, &mut nav);
+                        }
+                    });
+                buttons.push(title);
             }
             right = buttons.iter().map(|b| b.rect.right()).fold(right, f32::max);
             switch_on_hover(ui.ctx(), &buttons);
@@ -783,21 +825,20 @@ fn press_gesture_id() -> egui::Id {
     egui::Id::new("menu-press-gesture")
 }
 
-/// Mac menus open on the press, not the release, so one gesture can press a title, drag down
-/// and release on an item. egui toggles a menu on click (release): the release that ends the
-/// opening press must not close it again.
-fn press_to_open(ctx: &egui::Context, title: &egui::Response) {
-    let id = egui::Popup::default_response_id(title);
-    let pressed = title.is_pointer_button_down_on() && ctx.input(|i| i.pointer.primary_pressed());
-    let opening = ctx.data(|d| d.get_temp::<bool>(press_gesture_id())).unwrap_or(false);
-    if pressed && !egui::Popup::is_id_open(ctx, id) {
-        egui::Popup::open_id(ctx, id);
-        ctx.data_mut(|d| d.insert_temp(press_gesture_id(), true));
-        ctx.request_repaint();
-    } else if title.clicked() && opening {
-        egui::Popup::open_id(ctx, id);
-        ctx.request_repaint();
+/// A menu title's open/close command this frame, Mac-style: the press opens a closed menu (and
+/// starts a press-drag gesture: releasing on an item runs it) or closes an open one; the release
+/// never toggles, so the menu doesn't blink.
+fn title_press(ctx: &egui::Context, title: &egui::Response) -> Option<egui::SetOpenCommand> {
+    // A press this frame on the title (still down, or a whole click within one frame).
+    let pressed = ctx.input(|i| i.pointer.primary_pressed()) && (title.is_pointer_button_down_on() || title.clicked());
+    if !pressed {
+        return None;
     }
+    let open = egui::Popup::is_id_open(ctx, egui::Popup::default_response_id(title));
+    if !open {
+        ctx.data_mut(|d| d.insert_temp(press_gesture_id(), true));
+    }
+    Some(egui::SetOpenCommand::Bool(!open))
 }
 
 /// Did the press-drag gesture that opened the menus end over `item` (released on it)?
@@ -862,12 +903,8 @@ pub fn search_items<'a>(items: &'a [MenuItem], query: &str) -> Vec<&'a MenuItem>
     if q.is_empty() {
         return Vec::new();
     }
-    let mut hits: Vec<(u8, usize, &MenuItem)> = items
-        .iter()
-        .enumerate()
-        .filter(|(_, it)| it.label != "---")
-        .filter_map(|(i, it)| search_rank(&q, &it.label, &it.path).map(|r| (r, i, it)))
-        .collect();
+    let mut hits: Vec<(u8, usize, &MenuItem)> =
+        items.iter().enumerate().filter(|(_, it)| it.label != "---").filter_map(|(i, it)| search_rank(&q, &it.label, &it.path).map(|r| (r, i, it))).collect();
     hits.sort_by_key(|(r, i, _)| (*r, *i));
     let mut seen = std::collections::HashSet::new();
     hits.into_iter().filter(|(_, _, it)| seen.insert(it.id.as_str())).take(HELP_SEARCH_MAX).map(|(_, _, it)| it).collect()
@@ -885,16 +922,17 @@ fn help_search(ui: &mut egui::Ui, items: &[MenuItem], clicked: &mut Option<Strin
     let reopened = ctx.data(|d| d.get_temp::<u64>(pass_id)).is_none_or(|p| p + 1 < pass);
     ctx.data_mut(|d| d.insert_temp(pass_id, pass));
     let mut query: String = if reopened { String::new() } else { ctx.data(|d| d.get_temp(text_id)).unwrap_or_default() };
-    let field = ui.add(egui::TextEdit::singleline(&mut query).id(text_id.with("field")).hint_text(crate::i18n::tr(lang, "Search menus")).desired_width(f32::INFINITY));
+    let field = ui.add(egui::TextEdit::singleline(&mut query).id(text_id.with("field")).hint_text(crate::i18n::tr(lang, "Search menus")).desired_width(220.0));
     if reopened {
         field.request_focus();
     }
     let results = search_items(items, &query);
-    if field.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-        if let Some(it) = results.iter().find(|it| it.enabled) {
-            *clicked = Some(it.id.clone());
-            ui.close();
-        }
+    if field.lost_focus()
+        && ui.input(|i| i.key_pressed(egui::Key::Enter))
+        && let Some(it) = results.iter().find(|it| it.enabled)
+    {
+        *clicked = Some(it.id.clone());
+        ui.close();
     }
     ctx.data_mut(|d| d.insert_temp(text_id, query.clone()));
     if !query.trim().is_empty() {

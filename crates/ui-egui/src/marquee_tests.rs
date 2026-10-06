@@ -204,3 +204,115 @@ fn marquee_drag_bench() {
     eprintln!("marquee drag on 6000x4000 (shift+alt, readout): {ms:.2} ms per frame");
     assert!(h.query_by_label("W:").is_some());
 }
+
+/// Dragging inside the selection with a marquee moves it (Photoshop): plain drag = the outline,
+/// ⌘-drag = cut the selected pixels and move them; ⇧ still adds and a click deselects.
+#[test]
+fn drag_inside_the_selection_moves_or_cuts_it() {
+    use crate::canvas::{ToolEvent, tool_event};
+    let mut app = PhotocraftApp::new(photocraft_engine::Session::new(), crate::Services::default());
+    app.run("file.new", json!({"width": 80, "height": 60, "background": "transparent"})).unwrap();
+    app.sync_views();
+    app.ui.extras.snap = false;
+    app.ui.tool = Tool::RectMarquee;
+    app.session
+        .edit("paint", |doc, a| {
+            doc.layer_mut(a.unwrap()).unwrap().surface_mut().unwrap().fill_rect(Rect::new(10, 10, 30, 30), &[1.0, 0.0, 0.0, 1.0]);
+            Ok(())
+        })
+        .unwrap();
+    let sel = |app: &PhotocraftApp| app.session.active().unwrap().doc.selection.as_ref().map(|s| s.content_bounds());
+    let alpha = |app: &PhotocraftApp, x: i32, y: i32| {
+        let st = app.session.active().unwrap();
+        st.doc.layer(st.active_layer.unwrap()).unwrap().surface().unwrap().rgba(x, y)[3]
+    };
+    let drag = |app: &mut PhotocraftApp, from: [f64; 2], to: [f64; 2], m: Modifiers| {
+        tool_event(app, ToolEvent::Down { x: from[0], y: from[1], pressure: 1.0 }, m);
+        tool_event(app, ToolEvent::Move { x: to[0], y: to[1], pressure: 1.0 }, m);
+        tool_event(app, ToolEvent::Up { x: to[0], y: to[1] }, m);
+    };
+    app.run("select.rect", json!({"x": 10, "y": 10, "width": 20, "height": 20})).unwrap();
+    // A plain drag inside moves the outline only.
+    drag(&mut app, [20.0, 20.0], [30.0, 25.0], Modifiers::NONE);
+    assert_eq!(sel(&app), Some(Rect::new(20, 15, 40, 35)));
+    assert_eq!(alpha(&app, 12, 12), 1.0, "pixels stay put");
+    // ⌘-drag cuts the selected pixels: they float 5 px right (the document waits for the drop).
+    drag(&mut app, [30.0, 25.0], [35.0, 25.0], Modifiers::COMMAND);
+    assert_eq!(crate::floating::active(&app).map(|f| f.offset), Some((5, 0)));
+    assert_eq!(alpha(&app, 22, 20), 1.0, "not dropped yet");
+    // ⇧-drag draws (and adds): the floating piece drops first, with its outline.
+    drag(&mut app, [30.0, 20.0], [60.0, 50.0], Modifiers::SHIFT);
+    assert!(crate::floating::active(&app).is_none());
+    assert_eq!(alpha(&app, 22, 20), 0.0, "cut from where it was");
+    assert_eq!(alpha(&app, 32, 20), 1.0, "and dropped 5 px right");
+    assert_eq!(alpha(&app, 12, 12), 1.0, "unselected pixels stay");
+    assert_eq!(sel(&app), Some(Rect::new(25, 15, 60, 50)));
+    // A click inside (no move) deselects, like a marquee click.
+    drag(&mut app, [30.0, 20.0], [30.0, 20.0], Modifiers::NONE);
+    assert_eq!(sel(&app), None);
+}
+
+/// The same through the real canvas (mouse events, snapping on): a drag inside the ants moves
+/// the selection.
+#[test]
+fn mouse_drag_inside_the_selection_moves_it() {
+    let mut h = harness(Tool::RectMarquee);
+    press_at(&mut h, 100.0, 80.0, Modifiers::NONE);
+    release_at(&mut h, 200.0, 160.0, Modifiers::NONE);
+    let first = selection(&h);
+    assert_eq!(first, Rect::new(100, 80, 200, 160), "drawn");
+    press_at(&mut h, 150.0, 120.0, Modifiers::NONE);
+    release_at(&mut h, 170.0, 130.0, Modifiers::NONE);
+    assert_eq!(selection(&h), Rect::new(120, 90, 220, 170), "moved by (20, 10)");
+}
+
+/// ⌘-drag floats the cut piece (Photoshop): it shows at the pointer while dragging, plain drags
+/// move it again without cutting anything new, and only deselecting drops it into the layer.
+#[test]
+fn cmd_drag_floats_the_cut_piece_until_deselected() {
+    use crate::canvas::{ToolEvent, tool_event};
+    let mut app = PhotocraftApp::new(photocraft_engine::Session::new(), crate::Services::default());
+    app.run("file.new", json!({"width": 80, "height": 60, "background": "transparent"})).unwrap();
+    app.sync_views();
+    app.ui.extras.snap = false;
+    app.ui.tool = Tool::RectMarquee;
+    app.session
+        .edit("paint", |doc, a| {
+            doc.layer_mut(a.unwrap()).unwrap().surface_mut().unwrap().fill_rect(Rect::new(10, 10, 30, 30), &[1.0, 0.0, 0.0, 1.0]);
+            Ok(())
+        })
+        .unwrap();
+    app.run("select.rect", json!({"x": 10, "y": 10, "width": 20, "height": 20})).unwrap();
+    let layer = app.session.active().unwrap().active_layer.unwrap();
+    let alpha = |d: &photocraft_doc::Document, x, y| d.layer(layer).unwrap().surface().unwrap().rgba(x, y)[3];
+    let doc = |app: &PhotocraftApp| app.session.active().unwrap().doc.clone();
+    let drag = |app: &mut PhotocraftApp, from: [f64; 2], to: [f64; 2], m: Modifiers| {
+        tool_event(app, ToolEvent::Down { x: from[0], y: from[1], pressure: 1.0 }, m);
+        tool_event(app, ToolEvent::Move { x: to[0], y: to[1], pressure: 1.0 }, m);
+    };
+    let untouched = app.session.active().unwrap().history.past_len();
+    // ⌘-drag: the piece is at the pointer while dragging.
+    drag(&mut app, [20.0, 20.0], [35.0, 20.0], Modifiers::COMMAND);
+    let (shown, _) = crate::move_ui::display_doc(&mut app, 0).expect("a live preview while dragging");
+    assert!(alpha(&shown, 12, 20) == 0.0 && alpha(&shown, 40, 20) == 1.0, "cut and at the pointer");
+    tool_event(&mut app, ToolEvent::Up { x: 35.0, y: 20.0 }, Modifiers::COMMAND);
+    assert_eq!(alpha(&doc(&app), 12, 20), 1.0, "the document waits for the drop");
+    // A plain drag on the floating piece moves it again (no ⌘, no new cut).
+    drag(&mut app, [30.0, 20.0], [30.0, 30.0], Modifiers::NONE);
+    tool_event(&mut app, ToolEvent::Up { x: 30.0, y: 30.0 }, Modifiers::NONE);
+    assert_eq!(crate::floating::active(&app).map(|f| f.offset), Some((15, 10)));
+    let (shown, _) = crate::move_ui::display_doc(&mut app, 0).unwrap();
+    assert!(alpha(&shown, 27, 22) == 1.0 && alpha(&shown, 12, 20) == 0.0);
+    assert_eq!(app.session.active().unwrap().history.past_len(), untouched, "nothing committed yet");
+    // ⌘Z puts it back; nothing was ever cut.
+    crate::menus::invoke(&mut app, &egui::Context::default(), "edit.undo", json!({})).unwrap();
+    assert!(crate::floating::active(&app).is_none() && alpha(&doc(&app), 12, 20) == 1.0);
+    assert_eq!(app.session.active().unwrap().history.past_len(), untouched);
+    // Float it again, then deselect: dropped into the layer in one step, selection gone.
+    drag(&mut app, [20.0, 20.0], [35.0, 30.0], Modifiers::COMMAND);
+    tool_event(&mut app, ToolEvent::Up { x: 35.0, y: 30.0 }, Modifiers::COMMAND);
+    crate::menus::invoke(&mut app, &egui::Context::default(), "select.deselect", json!({})).unwrap();
+    let d = doc(&app);
+    assert!(d.selection.is_none());
+    assert!(alpha(&d, 12, 12) == 0.0 && alpha(&d, 26, 21) == 1.0 && alpha(&d, 44, 39) == 1.0, "dropped 15, 10 from where it was cut");
+}
