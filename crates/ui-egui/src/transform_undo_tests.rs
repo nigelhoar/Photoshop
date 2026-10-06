@@ -1,5 +1,6 @@
 //! Free Transform through the real canvas: Undo and Redo step through the box's own changes (each
-//! drag one step) and never reach the document under the open box, as in Photoshop.
+//! drag one step) and never reach the document under the open box, as in Photoshop; and the
+//! handles have a generous grab radius, so a press just off a corner scales instead of rotating.
 
 use egui::{Key, Modifiers, PointerButton, Pos2, vec2};
 use egui_kittest::Harness;
@@ -132,6 +133,30 @@ fn undo_steps_back_through_the_transform_not_the_document() {
 fn width(h: &Harness<'static, PhotocraftApp>) -> u32 {
     let st = h.state().session.active().unwrap();
     st.doc.layer(st.active_layer.unwrap()).unwrap().surface().unwrap().content_bounds().width()
+}
+
+/// A press 10 pt diagonally off a corner (outside the old 8 pt radius) grabs the corner and
+/// scales, whether the transform is already open or starts from the Move tool's controls.
+#[test]
+fn a_press_just_off_a_corner_scales_rather_than_rotates() {
+    for via_controls in [false, true] {
+        let mut h = harness();
+        if via_controls {
+            h.state_mut().ui.tool_options.move_show_transform = true;
+            h.run_steps(1);
+        } else {
+            begin(&mut h);
+        }
+        drag(&mut h, [207.0, 167.0], [257.0, 197.0]);
+        let q = quad(&h);
+        assert!((q[0][1] - q[1][1]).abs() < 1e-6 && (q[1][0] - q[2][0]).abs() < 1e-6, "via controls {via_controls}: not rotated: {q:?}");
+        assert!(q[2][0] > 230.0, "via controls {via_controls}: scaled: {q:?}");
+        // Well outside the box still rotates.
+        let before = quad(&h);
+        drag(&mut h, [before[2][0] + 30.0, before[2][1] + 30.0], [before[2][0] - 10.0, before[2][1] + 60.0]);
+        let r = quad(&h);
+        assert!((r[0][1] - r[1][1]).abs() > 1.0, "via controls {via_controls}: rotated: {r:?}");
+    }
 }
 
 /// A transform started by dragging a Move-tool control: that first drag is undoable too.

@@ -33,6 +33,15 @@ pub struct TransformPreview {
     steps: Steps,
 }
 
+/// Grab radius of the box's handles, in screen points. Generous, like Photoshop's, so a corner is
+/// easy to catch; just beyond it, outside the box, a drag rotates.
+pub const HANDLE_PX: f64 = 12.0;
+
+/// [`HANDLE_PX`] in document pixels at the current zoom.
+pub fn handle_tolerance(app: &PhotocraftApp) -> f64 {
+    HANDLE_PX / app.current_zoom().max(0.01) as f64
+}
+
 /// The box as one undo step restores it.
 #[derive(Clone, Debug, PartialEq)]
 struct Step {
@@ -502,23 +511,21 @@ enum Hit {
     Outside,
 }
 
+/// The nearest handle within `tol` (on a small box their grab areas overlap), else inside or
+/// outside the box.
 fn hit(t: &TransformSession, p: [f64; 2], tol: f64) -> Hit {
     let d = |a: [f64; 2]| ((a[0] - p[0]).powi(2) + (a[1] - p[1]).powi(2)).sqrt();
-    if d(t.pivot) < tol {
-        return Hit::Pivot;
-    }
-    for i in 0..4 {
-        if d(t.quad[i]) < tol {
-            return Hit::Corner(i);
-        }
-    }
-    for i in 0..4 {
+    let mid = |i: usize| {
         let (a, b) = (t.quad[i], t.quad[(i + 1) % 4]);
-        if d([(a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0]) < tol {
-            return Hit::Edge(i);
-        }
+        [(a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0]
+    };
+    let handles = (0..4).map(|i| (t.quad[i], Hit::Corner(i))).chain((0..4).map(|i| (mid(i), Hit::Edge(i)))).chain([(t.pivot, Hit::Pivot)]);
+    let nearest = handles.map(|(q, h)| (d(q), h)).filter(|(dist, _)| *dist < tol).min_by(|a, b| a.0.total_cmp(&b.0));
+    match nearest {
+        Some((_, h)) => h,
+        None if inside(&t.quad, p) => Hit::Inside,
+        None => Hit::Outside,
     }
-    if inside(&t.quad, p) { Hit::Inside } else { Hit::Outside }
 }
 
 fn inside(q: &[[f64; 2]; 4], p: [f64; 2]) -> bool {
@@ -544,7 +551,7 @@ struct Gesture {
 /// Pointer input while transforming. Returns false when no transform is active.
 pub fn pointer(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers) -> bool {
     let Some(t) = app.ui.transform.clone() else { return false };
-    let tol = 8.0 / app.current_zoom().max(0.01) as f64;
+    let tol = handle_tolerance(app);
     if t.warp.is_some() {
         warp_pointer(app, ev, tol);
         return true;
@@ -807,7 +814,7 @@ pub fn split(app: &mut PhotocraftApp, id: &str, at: Option<[f64; 2]>) -> Result<
 /// Cursor for hovering a document point while transforming.
 pub fn cursor(app: &PhotocraftApp, p: [f64; 2]) -> Option<CursorIcon> {
     let t = app.ui.transform.as_ref()?;
-    let tol = 8.0 / app.current_zoom().max(0.01) as f64;
+    let tol = handle_tolerance(app);
     if let Some(w) = &t.warp {
         return Some(if w.style != WarpStyle::Custom || warp_hit(w, p, tol).is_some() { CursorIcon::Crosshair } else { CursorIcon::Default });
     }
@@ -1173,6 +1180,20 @@ mod tests {
 
     fn close(a: [[f64; 2]; 4], b: [[f64; 2]; 4]) -> bool {
         a.iter().flatten().zip(b.iter().flatten()).all(|(x, y)| (x - y).abs() < 1e-6)
+    }
+
+    /// On a box smaller than the handles' grab areas the nearest handle wins, so the reference
+    /// point at the centre doesn't take presses on the corners and edges.
+    #[test]
+    fn the_nearest_handle_wins_on_a_small_box() {
+        let mut s = session();
+        s.quad = corners([0.0, 0.0, 16.0, 16.0]);
+        s.pivot = [8.0, 8.0];
+        assert_eq!(hit(&s, [0.0, 0.0], 12.0), Hit::Corner(0));
+        assert_eq!(hit(&s, [16.0, 17.0], 12.0), Hit::Corner(2));
+        assert_eq!(hit(&s, [8.0, -1.0], 12.0), Hit::Edge(0));
+        assert_eq!(hit(&s, [8.0, 8.0], 12.0), Hit::Pivot);
+        assert_eq!(hit(&s, [40.0, 40.0], 12.0), Hit::Outside);
     }
 
     #[test]
