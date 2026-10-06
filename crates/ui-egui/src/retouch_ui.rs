@@ -106,10 +106,14 @@ pub fn finish_patch(app: &mut PhotocraftApp, start: [f64; 2], end: [f64; 2]) {
     if off == [0, 0] {
         return;
     }
+    let preview = crate::patch_preview::take(app);
     let p = json!({"offset": off, "mode": app.ui.tool_options.patch_mode, "target": crate::canvas::paint_target(app)});
-    if let Err(e) = app.run("paint.patch", p) {
-        app.ui.status = e;
-        app.ui.status_error = true;
+    match app.run("paint.patch", p) {
+        Ok(_) => crate::patch_preview::committed(app, preview, off),
+        Err(e) => {
+            app.ui.status = e;
+            app.ui.status_error = true;
+        }
     }
 }
 
@@ -175,7 +179,9 @@ fn pct(ui: &mut egui::Ui, label: &str, v: &mut f32) {
 
 /// Options bar for the retouching and smart-selection tools. Returns false for other tools.
 pub fn options_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui, tool: Tool) -> bool {
-    if !tool.is_brushlike() && !matches!(tool, Tool::QuickSelection | Tool::ObjectSelection | Tool::Patch) || matches!(tool, Tool::Brush | Tool::Pencil | Tool::Eraser) {
+    if !tool.is_brushlike() && !matches!(tool, Tool::QuickSelection | Tool::ObjectSelection | Tool::Patch)
+        || matches!(tool, Tool::Brush | Tool::Pencil | Tool::Eraser)
+    {
         return false;
     }
     let o = &mut app.ui.tool_options;

@@ -82,6 +82,7 @@ pub mod paint_mouse;
 pub mod palette;
 pub mod panels;
 pub mod parity;
+pub mod patch_preview;
 pub mod perspective_ui;
 pub mod plugin_ui;
 pub mod prefs_ui;
@@ -237,6 +238,8 @@ pub struct PhotocraftApp {
     trail: Option<stroke_trail::Trail>,
     /// Move tool drag shown live (`move_ui`).
     pub(crate) move_preview: Option<move_ui::MovePreview>,
+    /// Patch Tool drag: the healed document at the pointer (`patch_preview`).
+    pub(crate) patch_preview: Option<patch_preview::PatchPreview>,
     /// The next tool `Down` is a right-button drag that erases (see `paint_mouse`).
     secondary_erase: bool,
     /// While a batch of recovered pointer samples is replayed, defer the live-stroke update to one
@@ -374,6 +377,7 @@ impl PhotocraftApp {
             live_stroke: None,
             trail: None,
             move_preview: None,
+            patch_preview: None,
             secondary_erase: false,
             defer_live_stroke: false,
             last_stroke_end: None,
