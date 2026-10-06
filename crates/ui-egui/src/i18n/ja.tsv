@@ -1977,3 +1977,22 @@
 	Opening…	開いています…
 	Reading…	読み込み中…
 	Working…	処理中…
+
+	Shadow Clipping Warning (U)	シャドウのクリッピング警告 (U)
+	Highlight Clipping Warning (O)	ハイライトのクリッピング警告 (O)
+	Show Lab Color Readouts	Lab カラー値を表示
+	Show Vectorscope	ベクトルスコープを表示
+	Show Red at 3 o'clock	赤を3時の位置に表示
+	Show Skin Tone Indicator	スキントーン指標を表示
+	Tone Histogram	階調ヒストグラム
+	Show Selected Region	選択範囲を表示
+
+cameraRaw	Light	ライト
+
+# Camera Raw: contextual controls and window title
+	Camera Raw Filter ({layer})	Camera Raw フィルター ({layer})
+cameraRaw	Lights	明部
+cameraRaw	Blending	ブレンド
+cameraRaw	Blacks	黒レベル
+cameraRaw	Amount	適用量
+cameraRaw	Color	カラー
