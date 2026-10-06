@@ -1605,7 +1605,10 @@ fn layer_row(
     // The eye takes drags too (so a drag starting on it never reorders the row): dragging down
     // the eyes gives every row swept over the visibility the first eye toggled to (Photoshop).
     let eye_resp = ui.interact(eye, ui.id().with(("eye", l.id.0)), Sense::click_and_drag());
-    icons::paint(ui, eye, if l.visible { "eye" } else { "eye-off" }, 15.0, if l.visible { t.icon } else { t.text_faint });
+    // Photoshop leaves a hidden layer's eye box empty (still clickable).
+    if l.visible {
+        icons::paint(ui, eye, "eye", 15.0, t.icon);
+    }
     let sweep_id = egui::Id::new("layer-eye-sweep");
     if eye_resp.drag_started() {
         let visible = !l.visible;
