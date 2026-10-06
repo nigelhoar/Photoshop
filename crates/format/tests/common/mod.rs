@@ -187,6 +187,7 @@ pub fn rich_doc(mode: ColorMode, depth: SampleType) -> Document {
             }),
             warp: Some(photocraft_geom::warp::Warp::custom(photocraft_geom::warp::BezierMesh::identity([0.0, 0.0, 48.0, 24.0], 2, 1), [0.0, 0.0, 48.0, 24.0])),
             stack_mode: Some(photocraft_doc::StackMode::Median),
+            perspective: None,
         }),
     );
     let linked = Layer::new(
@@ -201,6 +202,7 @@ pub fn rich_doc(mode: ColorMode, depth: SampleType) -> Document {
             filter_mask: None,
             warp: None,
             stack_mode: None,
+            perspective: None,
         }),
     );
     d.layers.extend([paint, group, fill, grad, text, shape, smart, linked]);
