@@ -24,6 +24,8 @@ mod apple_events;
 mod control_server;
 mod crash_guard;
 mod gpu_startup;
+#[cfg(target_os = "macos")]
+mod mac_window;
 // Pure logic is tested on every platform; only Linux runs the check.
 #[cfg(any(target_os = "linux", test))]
 mod linux_libs;
@@ -173,6 +175,9 @@ fn main() -> eframe::Result {
             services.preset_store = presets;
             let mut app = PhotocraftApp::new(Session::new(), services);
             app.integrated_titlebar = cfg!(target_os = "macos");
+            // Only the title bar's free gap drags the window, never the menus (mac_window.rs).
+            #[cfg(target_os = "macos")]
+            mac_window::disable_native_title_drag();
             // Long commands and file opens run as background jobs with progress and Cancel (#210).
             app.background_jobs = std::env::var_os("PHOTOCRAFT_INLINE_JOBS").is_none();
             if let Ok(Some(icc)) = monitor.recv_timeout(std::time::Duration::from_secs(2)) {
