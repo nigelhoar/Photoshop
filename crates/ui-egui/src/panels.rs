@@ -289,7 +289,13 @@ pub fn title_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         .frame(egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin { left, right: 10, top: 0, bottom: 0 }))
         .show(ui, |ui| {
             let full = ui.max_rect();
-            let drag = ui.interact(full, ui.id().with("titledrag"), Sense::click_and_drag());
+            // Only the free gap between the menus and the right-hand controls drags the window
+            // (as on the Mac): a press on a menu title must open the menu, never move the window.
+            // The gap is last frame's, as the menus are laid out after this.
+            let span_id = ui.id().with("titledrag-span");
+            let (gap_l, gap_r) = ui.ctx().data(|d| d.get_temp::<(f32, f32)>(span_id)).unwrap_or((full.right(), full.right()));
+            let gap = egui::Rect::from_x_y_ranges(gap_l.max(full.left())..=gap_r.min(full.right()).max(gap_l), full.y_range());
+            let drag = ui.interact(gap, ui.id().with("titledrag"), Sense::click_and_drag());
             if drag.drag_started() {
                 ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
             }
@@ -341,6 +347,7 @@ pub fn title_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                     })
                     .inner;
             });
+            ui.ctx().data_mut(|d| d.insert_temp(span_id, (menus_right, controls_left)));
             let font = theme::medium(13.0);
             let galley = ui.painter().layout_no_wrap(title.clone(), font.clone(), t.text_dim);
             if let Some(x) = title_x(full.center().x, menus_right, controls_left, galley.size().x) {
@@ -1595,10 +1602,40 @@ fn layer_row(
     }
     let mut x = rect.left() + 6.0;
     let eye = Rect::from_min_size(pos2(x, rect.center().y - 11.0), vec2(22.0, 22.0));
-    let eye_resp = ui.interact(eye, ui.id().with(("eye", l.id.0)), Sense::click());
-    icons::paint(ui, eye, if l.visible { "eye" } else { "eye-off" }, 15.0, if l.visible { t.icon } else { t.text_faint });
+    // The eye takes drags too (so a drag starting on it never reorders the row): dragging down
+    // the eyes gives every row swept over the visibility the first eye toggled to (Photoshop).
+    let eye_resp = ui.interact(eye, ui.id().with(("eye", l.id.0)), Sense::click_and_drag());
+    // Photoshop leaves a hidden layer's eye box empty (still clickable).
+    if l.visible {
+        icons::paint(ui, eye, "eye", 15.0, t.icon);
+    }
+    let sweep_id = egui::Id::new("layer-eye-sweep");
+    if eye_resp.drag_started() {
+        let visible = !l.visible;
+        ctx.data_mut(|d| d.insert_temp(sweep_id, (visible, vec![l.id.0])));
+        actions.push(("layer.setProps".into(), json!({"layer": l.id.0, "visible": visible})));
+    } else if let Some((visible, mut swept)) = ctx.data(|d| d.get_temp::<(bool, Vec<u64>)>(sweep_id)) {
+        if !ctx.input(|i| i.pointer.primary_down()) {
+            ctx.data_mut(|d| d.remove::<(bool, Vec<u64>)>(sweep_id));
+        } else if let Some(p) = ctx.input(|i| i.pointer.interact_pos())
+            && p.y >= rect.top()
+            && p.y < rect.bottom()
+            && !swept.contains(&l.id.0)
+        {
+            if l.visible != visible {
+                actions.push(("layer.setProps".into(), json!({"layer": l.id.0, "visible": visible})));
+            }
+            swept.push(l.id.0);
+            ctx.data_mut(|d| d.insert_temp(sweep_id, (visible, swept)));
+        }
+    }
     if eye_resp.clicked() {
-        actions.push(("layer.setProps".into(), json!({"layer": l.id.0, "visible": !l.visible})));
+        // ⌥-click shows only this layer; ⌥-click it again to restore the others (Photoshop).
+        if ui.input(|i| i.modifiers.alt) {
+            actions.push(("layer.showOnly".into(), json!({"layer": l.id.0})));
+        } else {
+            actions.push(("layer.setProps".into(), json!({"layer": l.id.0, "visible": !l.visible})));
+        }
     }
     // Everything but the thumbnails, the indentation and the name, so a narrow panel squeezes
     // the indentation first, then the thumbnails (a layer with two masks has three).
@@ -1704,9 +1741,14 @@ fn layer_row(
         }
     }
     // Double-click the name to rename in place (Photoshop ergonomics). The Background can't be
-    // renamed while it's locked, so a double-click turns it into a normal layer instead.
+    // renamed while it's locked, so a double-click turns it into a normal layer instead. A smart
+    // object double-clicked anywhere but its name opens its contents as a new document.
+    let on_name = resp.interact_pointer_pos().zip(name_rect).is_some_and(|(p, r)| r.expand(2.0).contains(p));
     if resp.double_clicked() {
-        if crate::doc_props_ui::is_background(doc, l) {
+        if matches!(l.content, LayerContent::Smart(_)) && !on_name {
+            actions.push(("layer.select".into(), json!({"layer": l.id.0})));
+            actions.push(("layer.smartObjects.editContents".into(), Value::Null));
+        } else if crate::doc_props_ui::is_background(doc, l) {
             actions.push(("layer.new.layerFromBackground".into(), json!({})));
         } else if let Some(done) = crate::layer_row_ui::start_rename(ctx, l.id.0, &l.name) {
             // One rename at a time: starting this one commits any other (#314).

@@ -193,11 +193,12 @@ pub(crate) fn transform_layer(doc_sel: Option<&Surface>, l: &mut Layer, h: &Homo
         }
         LayerContent::Smart(sm) => {
             // Smart objects keep the transform and re-render from their source afterwards
-            // (`refresh_text`), so repeated transforms don't degrade the pixels.
-            let Some(a) = affine else {
-                return Err(EngineError::Other("Distort and Perspective on smart objects aren't supported yet".into()));
-            };
-            sm.transform = crate::smart_cmds::snap_affine(a.mul(&sm.transform));
+            // (`refresh_text`), so repeated transforms don't degrade the pixels. Distort and
+            // Perspective keep the full projective map, so the fourth corner survives re-renders.
+            match affine {
+                Some(a) => crate::smart_cmds::transform_placement(sm, &a),
+                None => crate::smart_cmds::set_placement(sm, h.mul(&crate::smart_cmds::placement(sm))),
+            }
             // Fallback appearance for sources that can't be re-rendered.
             if let Some(c) = &mut sm.cache {
                 let src = c.content_bounds();
@@ -239,6 +240,22 @@ pub(crate) fn transform_layer(doc_sel: Option<&Surface>, l: &mut Layer, h: &Homo
         vm.path = vm.path.transform(&a);
     }
     Ok(())
+}
+
+/// A ⌘-drag of the selection shown live: `doc` with the selected pixels of `layer` cut and
+/// moved by whole pixels (dx, dy), as `edit.transform` with that translation leaves them. The
+/// selection itself stays put (the canvas draws it at the pointer). Errors for layers without
+/// pixels.
+pub fn cut_moved(doc: &Document, layer: LayerId, dx: i32, dy: i32) -> Result<Document> {
+    let sel = doc.selection.clone().ok_or_else(|| EngineError::Other("no selection".into()))?;
+    let mut d = doc.clone();
+    let surf =
+        d.layer_mut(layer).ok_or(EngineError::NoLayer(layer))?.surface_mut().ok_or_else(|| EngineError::Other("the layer has no pixels to move".into()))?;
+    let (lifted, mut rest) = split_selected(surf, &sel);
+    composite_over(&mut rest, &photocraft_algo::resample::translate_surface(&lifted, dx, dy));
+    rest.prune();
+    *surf = rest;
+    Ok(d)
 }
 
 /// Split a layer surface by a selection: (selected pixels, everything else), both with alpha.

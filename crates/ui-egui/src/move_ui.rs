@@ -25,6 +25,9 @@ pub(crate) struct MovePreview {
     offsets: Vec<(i32, i32)>,
     /// The document at the latest offset.
     shown: Option<Arc<Document>>,
+    /// A ⌘-drag of the selection with a selection tool: the selected pixels of `ids[0]` are cut
+    /// and follow the pointer ([`photocraft_engine::transform_cmds::cut_moved`]).
+    cut: bool,
 }
 
 impl MovePreview {
@@ -44,13 +47,21 @@ impl MovePreview {
     }
 }
 
-/// The whole-pixel offset of the current Move drag on document `idx`, if one is under way.
+/// The whole-pixel offset of the current Move drag on the active document, or where a floating
+/// selection is shown (`floating`: its offset plus a drag of it in progress).
 fn drag_offset(app: &PhotocraftApp) -> Option<(i32, i32)> {
-    let d = app.drag.as_ref().filter(|d| d.tool == Tool::Move)?;
-    let end = d.points.last().map_or(d.start, |p| [p[0], p[1]]);
-    let dx = (end[0] - d.start[0]).round().clamp(-1e7, 1e7) as i32;
-    let dy = (end[1] - d.start[1]).round().clamp(-1e7, 1e7) as i32;
-    Some((dx, dy))
+    let floating = crate::floating::active(app).map(|f| f.offset);
+    let delta = app.drag.as_ref().filter(|d| d.tool == Tool::Move || d.sel_move == Some(true)).map(|d| {
+        let end = d.points.last().map_or(d.start, |p| [p[0], p[1]]);
+        ((end[0] - d.start[0]).round().clamp(-1e7, 1e7) as i32, (end[1] - d.start[1]).round().clamp(-1e7, 1e7) as i32)
+    });
+    match (floating, delta) {
+        (None, None) => None,
+        (f, d) => {
+            let (f, d) = (f.unwrap_or_default(), d.unwrap_or_default());
+            Some((f.0 + d.0, f.1 + d.1))
+        }
+    }
 }
 
 /// The document to show while a Move drag is under way on document `idx`: the moving layers at
@@ -64,16 +75,25 @@ pub(crate) fn display_doc(app: &mut PhotocraftApp, idx: usize) -> Option<(Arc<Do
         app.move_preview = None;
         return None;
     };
+    let floating = crate::floating::active(app);
+    let cut = floating.is_some() || app.drag.as_ref().is_some_and(|d| d.sel_move == Some(true));
     let st = app.session.documents().get(idx)?;
     let (doc_id, revision, doc) = (st.doc.id, st.revision, st.doc.clone());
-    let fresh = app.move_preview.as_ref().is_some_and(|p| p.doc == doc_id && p.revision == revision);
+    let fresh = app.move_preview.as_ref().is_some_and(|p| p.doc == doc_id && p.revision == revision && p.cut == cut);
     if !fresh {
-        let ids = photocraft_engine::layer_multi_cmds::move_targets(&doc, &st.selected_layers());
+        let (ids, bounds) = if cut {
+            // Only the selected pixels of the active layer move: they change only inside the
+            // selection's bounds (where they were and, offset, where they are).
+            (vec![floating.map(|f| f.layer).or(st.active_layer)?], Some(doc.selection.as_ref()?.content_bounds()))
+        } else {
+            let ids = photocraft_engine::layer_multi_cmds::move_targets(&doc, &st.selected_layers());
+            let bounds = photocraft_engine::layer_multi_cmds::layers_damage(&doc, &doc, &ids);
+            (ids, bounds)
+        };
         if ids.is_empty() {
             return None;
         }
-        let bounds = photocraft_engine::layer_multi_cmds::layers_damage(&doc, &doc, &ids);
-        app.move_preview = Some(MovePreview { doc: doc_id, revision, ids, bounds, offsets: Vec::new(), shown: None });
+        app.move_preview = Some(MovePreview { doc: doc_id, revision, ids, bounds, offsets: Vec::new(), shown: None, cut });
     }
     let p = app.move_preview.as_mut()?;
     if offset == (0, 0) && p.offsets.is_empty() {
@@ -81,7 +101,12 @@ pub(crate) fn display_doc(app: &mut PhotocraftApp, idx: usize) -> Option<(Arc<Do
     }
     if p.offsets.last() != Some(&offset) {
         let t0 = crate::gpu_canvas::now_ms();
-        match photocraft_engine::layer_multi_cmds::moved(&doc, &p.ids, offset.0, offset.1) {
+        let moved = if p.cut {
+            photocraft_engine::transform_cmds::cut_moved(&doc, p.ids[0], offset.0, offset.1)
+        } else {
+            photocraft_engine::layer_multi_cmds::moved(&doc, &p.ids, offset.0, offset.1)
+        };
+        match moved {
             Ok(d) => {
                 // Duotone documents display through their inks.
                 let d = photocraft_engine::mode_cmds::display_document(&d).unwrap_or(d);

@@ -49,11 +49,14 @@ pub struct Drag {
     /// The reposition key (Space) is held: pointer moves move the whole gesture instead of
     /// sizing it (marquees, lasso, shapes; `hold_keys`).
     pub reposition: bool,
+    /// A marquee or lasso drag that started inside the selection moves it instead of drawing:
+    /// `Some(false)` moves the outline, `Some(true)` (⌘) cuts the selected pixels and moves them.
+    pub sel_move: Option<bool>,
 }
 
 impl Drag {
     pub fn new(tool: Tool, start: [f64; 2], points: Vec<[f64; 3]>, modifiers: egui::Modifiers, erase: bool) -> Self {
-        Self { tool, start, points, modifiers, erase, constrain: None, live: modifiers, released: egui::Modifiers::NONE, reposition: false }
+        Self { tool, start, points, modifiers, erase, constrain: None, live: modifiers, released: egui::Modifiers::NONE, reposition: false, sel_move: None }
     }
 
     /// Reposition: move the start and every point so the last one lands on `to` (same size).
@@ -1300,6 +1303,15 @@ pub fn canvas_view(app: &mut PhotocraftApp, ui: &mut egui::Ui, idx: usize, rect:
     let xf = ViewXform { rect, zoom: view.zoom, center: view.center, flip };
     let pixel_grid = app.ui.view.shows(app.ui.view.show.pixel_grid);
     let response = ui.allocate_rect(rect, Sense::click_and_drag());
+    // Pressing on the canvas takes the keyboard back from any field (a layer rename commits, as
+    // in Photoshop), so tool letters and other single-key shortcuts work again.
+    if response.is_pointer_button_down_on() && ui.input(|i| i.pointer.any_pressed()) {
+        ui.memory_mut(|m| {
+            if let Some(id) = m.focused() {
+                m.surrender_focus(id);
+            }
+        });
+    }
     let painter = ui.painter_at(rect);
 
     match crate::prefs_ui::pasteboard_color(app) {
@@ -1465,7 +1477,12 @@ pub fn canvas_view(app: &mut PhotocraftApp, ui: &mut egui::Ui, idx: usize, rect:
         }
         if let Some((_, _, segs)) = &app.outline_cache {
             let time = ui.input(|i| i.time);
-            marching_ants_segments(&painter, &xf, segs, time);
+            // A selection being dragged (marquee / lasso inside the ants) follows the pointer.
+            let mut shown = xf;
+            if let Some([dx, dy]) = selection_drag_offset(app) {
+                shown.center = [xf.center[0] - dx as f32, xf.center[1] - dy as f32];
+            }
+            marching_ants_segments(&painter, &shown, segs, time);
             ctx.request_repaint_after(std::time::Duration::from_millis(100));
         }
     }
@@ -1542,6 +1559,8 @@ pub fn canvas_view(app: &mut PhotocraftApp, ui: &mut egui::Ui, idx: usize, rect:
         // (Preferences › Tools, `paint_mouse`).
         crate::paint_mouse::sync_tool_smoothing(app);
         let mut buttons = crate::paint_mouse::canvas_buttons(app, &response, tool);
+        // Right-click inside a selection: the selection context menu (canvas_menu.rs).
+        crate::canvas_menu::show(app, &response, tool, |p| xf.to_doc(p));
         // The (temporary) Hand pans above; its gestures never reach the tool underneath.
         if tool == Tool::Hand {
             (buttons.started, buttons.dragged, buttons.stopped) = (false, false, false);
@@ -1672,6 +1691,13 @@ pub fn canvas_view(app: &mut PhotocraftApp, ui: &mut egui::Ui, idx: usize, rect:
             ui.ctx().set_cursor_icon(c);
         } else if let Some(c) = response.hover_pos().filter(|_| tool == Tool::Crop).and_then(|p| crate::crop_ui::cursor(app, xf.to_doc(p))) {
             ui.ctx().set_cursor_icon(c);
+        } else if app.drag.as_ref().is_some_and(|d| d.sel_move.is_some())
+            || response.hover_pos().is_some_and(|p| {
+                app.drag.is_none() && selection_drag_kind(app, tool, xf.to_doc(p), crate::workspace_ui::sticky_mods(app, ui.input(|i| i.modifiers))).is_some()
+            })
+        {
+            // Over the ants with a marquee or lasso: the press drags the selection (Photoshop).
+            ui.ctx().set_cursor_icon(egui::CursorIcon::Move);
         } else if let Some(p) = response.hover_pos() {
             let alt = ui.input(|i| i.modifiers.alt);
             let icon = match tool {
@@ -1781,14 +1807,51 @@ fn zoom_about(view: &mut View, xf: &ViewXform, p: Pos2, new_zoom: f32) {
 
 /// Draw boundary segments as marching ants: white base, black dashes phased along x + y.
 fn marching_ants_segments(painter: &egui::Painter, xf: &ViewXform, segs: &[crate::outline::Segment], time: f64) {
+    let screen = segs.iter().map(|(a, b)| (xf.to_screen(a[0] as f32, a[1] as f32), xf.to_screen(b[0] as f32, b[1] as f32)));
+    marching_ants_screen(painter, screen, time);
+}
+
+/// A selection being drawn (marquee, lasso): the same ants as the finished selection, so the
+/// outline looks identical while dragging and after release.
+pub(crate) fn marching_ants_path(painter: &egui::Painter, points: &[Pos2], closed: bool) {
+    let ctx = painter.ctx();
+    ctx.request_repaint_after(std::time::Duration::from_millis(100));
+    let dash = 4.0f32;
+    let phase = ((ctx.input(|i| i.time) * 10.0) % (dash as f64 * 2.0)) as f32;
+    let (white, black) = (Stroke::new(1.0, Color32::WHITE), Stroke::new(1.0, Color32::BLACK));
+    let pts = points;
+    let n = pts.len();
+    let count = if closed && n > 2 { n } else { n.saturating_sub(1) };
+    // Dashes run on along the whole path (a curve is many short segments), so they stay dense.
+    let mut along = -phase;
+    for i in 0..count {
+        let (pa, pb) = (pts[i], pts[(i + 1) % n]);
+        let len = pa.distance(pb);
+        if len < 1e-3 {
+            continue;
+        }
+        painter.line_segment([pa, pb], white);
+        let dir = (pb - pa) / len;
+        let mut t = -along.rem_euclid(dash * 2.0);
+        while t < len {
+            let (s0, s1) = (t.max(0.0), (t + dash).min(len));
+            if s1 > s0 {
+                painter.line_segment([pa + dir * s0, pa + dir * s1], black);
+            }
+            t += dash * 2.0;
+        }
+        along += len;
+    }
+}
+
+/// Screen-space segments as marching ants: white base, black dashes phased along x + y.
+fn marching_ants_screen(painter: &egui::Painter, segs: impl Iterator<Item = (Pos2, Pos2)>, time: f64) {
     let dash = 4.0f32;
     let phase = ((time * 10.0) % (dash as f64 * 2.0)) as f32;
     let white = Stroke::new(1.0, Color32::WHITE);
     let black = Stroke::new(1.0, Color32::BLACK);
     let clip = painter.clip_rect();
-    for (a, b) in segs {
-        let pa = xf.to_screen(a[0] as f32, a[1] as f32);
-        let pb = xf.to_screen(b[0] as f32, b[1] as f32);
+    for (pa, pb) in segs {
         if !clip.intersects(Rect::from_two_pos(pa, pb).expand(1.0)) {
             continue;
         }
@@ -1877,7 +1940,7 @@ fn draw_tool_state(app: &PhotocraftApp, painter: &egui::Painter, xf: &ViewXform,
         if let Some(h) = hover {
             pts.push(h);
         }
-        crate::tool_feedback::draw_ants(painter, &pts, false);
+        marching_ants_path(painter, &pts, false);
         for p in pts.iter().take(app.ui.polygon.len()) {
             painter.rect_filled(Rect::from_center_size(*p, vec2(5.0, 5.0)), 0.0, Color32::WHITE);
             painter.rect_stroke(Rect::from_center_size(*p, vec2(5.0, 5.0)), 0.0, Stroke::new(1.0, Color32::BLACK), egui::StrokeKind::Outside);
@@ -1946,6 +2009,10 @@ fn draw_drag_preview(app: &mut PhotocraftApp, painter: &egui::Painter, xf: &View
         app.trail = None;
         return;
     };
+    // Dragging the selection: its own ants follow the pointer (`selection_drag_offset`).
+    if d.sel_move.is_some() {
+        return;
+    }
     let last = d.points.last().map(|p| [p[0], p[1]]).unwrap_or(d.start);
     let marquee = matches!(d.tool, Tool::RectMarquee | Tool::EllipseMarquee).then(|| marquee_corners(&app.ui.tool_options, d, last));
     if let Some((a, b)) = marquee {
@@ -1976,11 +2043,11 @@ fn draw_drag_preview(app: &mut PhotocraftApp, painter: &egui::Painter, xf: &View
             } else {
                 vec![r.left_top(), r.right_top(), r.right_bottom(), r.left_bottom()]
             };
-            crate::tool_feedback::draw_ants(painter, &pts, true);
+            marching_ants_path(painter, &pts, true);
         }
         Tool::Lasso => {
             let pts: Vec<Pos2> = d.points.iter().map(|p| xf.to_screen(p[0] as f32, p[1] as f32)).collect();
-            crate::tool_feedback::draw_ants(painter, &pts, false);
+            marching_ants_path(painter, &pts, false);
         }
         Tool::Gradient => {
             let a = xf.to_screen(d.start[0] as f32, d.start[1] as f32);
@@ -2046,8 +2113,18 @@ fn tool_move(app: &mut PhotocraftApp, x: f64, y: f64, pressure: f32, mods: egui:
 pub fn tool_event(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers) {
     // View › Snap / Snap To and smart guides (snap_ui.rs).
     let raw = ev;
+    // A press anywhere but on the floating selection (with a selection tool) drops it first.
+    if let ToolEvent::Down { x, y, .. } = raw
+        && crate::floating::active(app).is_some()
+        && selection_drag_kind(app, app.ui.tool, [x, y], mods) != Some(true)
+    {
+        crate::floating::commit(app);
+    }
     let ev = crate::snap_ui::filter_event(app, ev, mods);
-    if crate::transform_tool::pointer(app, ev, mods) {
+    // Free Transform picks the handle under the press where the user clicked: the snapped press
+    // can land outside the corner's hit zone and turn a corner drag into a move of the whole box.
+    let transform_ev = if matches!(raw, ToolEvent::Down { .. }) { raw } else { ev };
+    if crate::transform_tool::pointer(app, transform_ev, mods) {
         return;
     }
     if crate::distort_ui::pointer(app, ev, mods) {
@@ -2055,6 +2132,11 @@ pub fn tool_event(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers)
     }
     // Window › Modifier Keys: sticky Shift/⌘/⌥ act as held keys.
     let mods = crate::workspace_ui::sticky_mods(app, mods);
+    // ⌘⌥⌃-click with any tool selects the topmost layer with pixels there (quick_pick.rs); it
+    // must run before the ⌃⌥ brush resize below, which the same keys would trigger.
+    if crate::quick_pick::pointer(app, ev, mods) {
+        return;
+    }
     // Control+Alt-drag with a painting tool resizes the brush instead of painting (#231).
     if crate::brush_resize::pointer(app, ev, mods) {
         return;
@@ -2123,6 +2205,14 @@ pub fn tool_event(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers)
             // (⌥-click with the Clone Stamp or Healing Brush only sets the source).
             let sets_source = matches!(tool, Tool::CloneStamp | Tool::Healing) && mods.alt;
             if !sets_source && crate::rasterize_prompt::intercept(app, tool, x, y, pressure) {
+                return;
+            }
+            // Marquee / lasso inside the selection: drag the outline, or ⌘-drag to cut and move
+            // the selected pixels (Photoshop).
+            if let Some(cut) = selection_drag_kind(app, tool, [x, y], mods) {
+                let mut d = Drag::new(tool, [x, y], vec![[x, y, pressure as f64]], mods, false);
+                d.sel_move = Some(cut);
+                app.drag = Some(d);
                 return;
             }
             match tool {
@@ -2220,8 +2310,70 @@ pub fn tool_event(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers)
     }
 }
 
+/// Does a press with `tool` at `p` drag the selection rather than draw a new one? `Some(true)`
+/// for ⌘ (cut and move the selected pixels), `Some(false)` to move just the outline (no ⇧ / ⌥
+/// and the options bar on New Selection, so a combining drag still draws).
+pub fn selection_drag_kind(app: &PhotocraftApp, tool: Tool, p: [f64; 2], mods: egui::Modifiers) -> Option<bool> {
+    if !matches!(tool, Tool::RectMarquee | Tool::EllipseMarquee | Tool::Lasso) {
+        return None;
+    }
+    // A floating piece moves with a plain drag (⌘ optional); ⇧ / ⌥ draw (and drop it).
+    if crate::floating::active(app).is_some() {
+        return (crate::floating::hit(app, p) && !mods.shift && !mods.alt).then_some(true);
+    }
+    if !crate::canvas_menu::inside_selection(app, p) {
+        return None;
+    }
+    if mods.command && !mods.shift && !mods.alt {
+        return Some(true);
+    }
+    (!mods.command && selection_mode(app, mods) == "replace").then_some(false)
+}
+
+/// Whole-pixel offset the selection is drawn at: a selection drag in progress (`Drag::sel_move`)
+/// plus where a floating piece already floats.
+fn selection_drag_offset(app: &PhotocraftApp) -> Option<[f64; 2]> {
+    let floating = crate::floating::active(app).map(|f| [f64::from(f.offset.0), f64::from(f.offset.1)]);
+    let dragging = app.drag.as_ref().filter(|d| d.sel_move.is_some()).map(|d| {
+        let end = d.points.last().map_or(d.start, |p| [p[0], p[1]]);
+        [(end[0] - d.start[0]).round(), (end[1] - d.start[1]).round()]
+    });
+    match (floating, dragging) {
+        (None, None) => None,
+        (f, d) => {
+            let (f, d) = (f.unwrap_or_default(), d.unwrap_or_default());
+            Some([f[0] + d[0], f[1] + d[1]])
+        }
+    }
+}
+
+/// End of a selection drag: move the outline, or cut and move the selected pixels (with the
+/// outline). A click without moving deselects, like a marquee click.
+fn finish_selection_drag(app: &mut PhotocraftApp, cut: bool, start: [f64; 2], end: [f64; 2]) {
+    let (dx, dy) = ((end[0] - start[0]).round(), (end[1] - start[1]).round());
+    if dx == 0.0 && dy == 0.0 {
+        if !cut && app.session.is_enabled("select.deselect") {
+            let _ = app.run("select.deselect", json!({}));
+        }
+        return;
+    }
+    if cut {
+        // The cut piece floats (`floating`): the document changes only when it's dropped.
+        crate::floating::moved(app, (dx as i32, dy as i32));
+        return;
+    }
+    if let Err(e) = app.run("select.transformSelection", json!({"dx": dx, "dy": dy})) {
+        app.ui.status = e;
+        app.ui.status_error = true;
+    }
+}
+
 fn finish_gesture(app: &mut PhotocraftApp, d: Drag) {
     let end = d.points.last().copied().unwrap_or([d.start[0], d.start[1], 1.0]);
+    if let Some(cut) = d.sel_move {
+        finish_selection_drag(app, cut, d.start, [end[0], end[1]]);
+        return;
+    }
     // Where the next ⇧-click line starts.
     if crate::stroke_constraint::connects(d.tool)
         && let Some(st) = app.session.active()

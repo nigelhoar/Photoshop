@@ -157,6 +157,9 @@ pub struct DocState {
     /// Layers panel: layers whose effects list is collapsed under their row (the fx triangle;
     /// view state, not history). Effects lists start open.
     pub fx_collapsed: Vec<LayerId>,
+    /// ⌥-click on a layer's eye (`layer.showOnly`): the layer shown alone and every layer's
+    /// visibility before, so the next ⌥-click restores it (view state, not history).
+    pub show_only: Option<(LayerId, Vec<(LayerId, bool)>)>,
 }
 
 impl DocState {
@@ -176,6 +179,7 @@ impl DocState {
             channel_view: Default::default(),
             isolated_layers: Vec::new(),
             fx_collapsed: Vec::new(),
+            show_only: None,
         }
     }
     /// The selected layers in bottom-to-top document order, always including the active layer.

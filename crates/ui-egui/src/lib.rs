@@ -29,6 +29,7 @@ pub mod brush_sections;
 pub mod brushes_tab;
 pub mod camera_raw_ui;
 pub mod canvas;
+pub mod canvas_menu;
 pub mod channel_view;
 pub mod channels_panel;
 pub mod chrome_ui;
@@ -50,6 +51,7 @@ pub mod file_open;
 pub mod file_ui;
 pub mod fill_ui;
 pub mod filter_dialog;
+pub mod floating;
 pub mod gallery_ui;
 pub mod gpu_canvas;
 pub mod gpu_status;
@@ -88,6 +90,7 @@ pub mod preset_panels;
 pub mod props_layout;
 pub mod proxy;
 pub mod puppet_ui;
+pub mod quick_pick;
 pub mod rasterize_prompt;
 pub mod retouch_ui;
 pub mod rulers;
@@ -242,6 +245,10 @@ pub struct PhotocraftApp {
     last_stroke_end: Option<(DocId, [f64; 2])>,
     /// Control+Alt-drag brush resize in progress (`brush_resize`, #231).
     pub(crate) brush_resize: Option<brush_resize::Resize>,
+    /// A ⌘⌥⌃-click layer pick is in progress; its drag and release are swallowed (`quick_pick`).
+    pub(crate) quick_pick: bool,
+    /// A ⌘-dragged selection floating above its layer until dropped (`floating`).
+    pub(crate) floating: Option<floating::Floating>,
     control_rx: Option<Receiver<ControlRequest>>,
     pending_screenshots: Vec<(u64, Option<String>, Sender<ControlResponse>)>,
     /// Screenshots not yet requested from the viewport: (token, earliest time in ms, frames seen).
@@ -366,6 +373,8 @@ impl PhotocraftApp {
             defer_live_stroke: false,
             last_stroke_end: None,
             brush_resize: None,
+            quick_pick: false,
+            floating: None,
             control_rx: None,
             pending_screenshots: Vec::new(),
             queued_screenshots: Vec::new(),
@@ -470,6 +479,10 @@ impl PhotocraftApp {
 
     /// Run an engine command, reporting errors in the status bar.
     pub fn run(&mut self, id: &str, params: Value) -> Result<Value, String> {
+        // A floating selection drops before other commands; Undo puts it back instead.
+        if crate::floating::before_command(self, id) {
+            return Ok(serde_json::json!({"floating": "returned"}));
+        }
         let clip_read = std::mem::take(&mut self.clip_read_for_paste);
         if self.automation_input
             && let Some(authorize) = self.services.automation_command.as_ref()

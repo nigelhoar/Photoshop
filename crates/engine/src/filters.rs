@@ -545,6 +545,7 @@ mod tests {
                     filter_mask: None,
                     warp: None,
                     stack_mode: None,
+                    perspective: None,
                 }),
             );
             *active = Some(doc.insert_above(*active, l));
