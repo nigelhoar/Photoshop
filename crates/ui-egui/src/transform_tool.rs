@@ -30,6 +30,57 @@ pub struct TransformPreview {
     gesture: Option<Gesture>,
     /// Warp-mode drag: (control point, pointer start, mesh points at the start).
     warp_drag: Option<(usize, [f64; 2], Vec<[f64; 2]>)>,
+    /// The box before the drag in progress (recorded as an undo step when the drag changed it).
+    pending: Option<Step>,
+    /// ⌘Z / ⇧⌘Z while transforming: one step per drag, as in Photoshop.
+    undo: Vec<Step>,
+    redo: Vec<Step>,
+}
+
+/// The box's state: what one drag changes and ⌘Z restores.
+#[derive(Clone, Debug, PartialEq)]
+struct Step {
+    quad: [[f64; 2]; 4],
+    pivot: [f64; 2],
+    warp: Option<Warp>,
+}
+
+impl Step {
+    fn of(t: &TransformSession) -> Self {
+        Self { quad: t.quad, pivot: t.pivot, warp: t.warp.clone() }
+    }
+
+    fn apply(self, t: &mut TransformSession) {
+        (t.quad, t.pivot, t.warp) = (self.quad, self.pivot, self.warp);
+    }
+}
+
+/// Is there a transform drag to undo (`back`) or redo?
+pub fn can_step(app: &PhotocraftApp, back: bool) -> bool {
+    app.transform_preview.as_ref().is_some_and(|pv| if back { !pv.undo.is_empty() } else { !pv.redo.is_empty() })
+}
+
+/// ⌘Z (`back`) / ⇧⌘Z while transforming: undo or redo the last drag of the box. True if one was.
+pub fn step(app: &mut PhotocraftApp, back: bool) -> bool {
+    let (Some(t), Some(pv)) = (app.ui.transform.as_mut(), app.transform_preview.as_mut()) else { return false };
+    let (from, to) = if back { (&mut pv.undo, &mut pv.redo) } else { (&mut pv.redo, &mut pv.undo) };
+    let Some(s) = from.pop() else { return false };
+    to.push(Step::of(t));
+    s.apply(t);
+    pv.gesture = None;
+    pv.warp_drag = None;
+    true
+}
+
+/// A drag ended: if it changed the box, the state before it becomes an undo step.
+fn record_step(app: &mut PhotocraftApp) {
+    let (Some(t), Some(pv)) = (app.ui.transform.as_ref(), app.transform_preview.as_mut()) else { return };
+    if let Some(before) = pv.pending.take()
+        && before != Step::of(t)
+    {
+        pv.undo.push(before);
+        pv.redo.clear();
+    }
 }
 
 fn corners(r: [f64; 4]) -> [[f64; 2]; 4] {
@@ -74,8 +125,17 @@ pub fn begin(app: &mut PhotocraftApp, ctx: &egui::Context) -> Result<(), String>
     let max_side = ctx.input(|i| i.max_texture_side).max(app.gpu.as_ref().map_or(1, |g| g.max_texture_side()));
     let (image, uv) = preview_image(&doc, id, lifted.as_ref(), b, max_side);
     let texture = crate::transform_tex::PreviewTextures::new(ctx, format!("transform-{session}"), image, uv);
-    app.transform_preview =
-        Some(TransformPreview { session, doc: Arc::new(pd), texture, opacity: layer.opacity * layer.fill_opacity, gesture: None, warp_drag: None });
+    app.transform_preview = Some(TransformPreview {
+        session,
+        doc: Arc::new(pd),
+        texture,
+        opacity: layer.opacity * layer.fill_opacity,
+        gesture: None,
+        warp_drag: None,
+        pending: None,
+        undo: Vec::new(),
+        redo: Vec::new(),
+    });
     app.ui.transform = Some(TransformSession {
         session,
         layer: id.0,
@@ -129,7 +189,17 @@ fn begin_lone(
     let max_side = ctx.input(|i| i.max_texture_side).max(app.gpu.as_ref().map_or(1, |g| g.max_texture_side()));
     let (image, uv) = crate::transform_tex::read_surface(&lifted, None, b, max_side);
     let texture = crate::transform_tex::PreviewTextures::new(ctx, format!("transform-{session}"), image, uv);
-    app.transform_preview = Some(TransformPreview { session, doc: Arc::new(pd), texture, opacity: 0.6, gesture: None, warp_drag: None });
+    app.transform_preview = Some(TransformPreview {
+        session,
+        doc: Arc::new(pd),
+        texture,
+        opacity: 0.6,
+        gesture: None,
+        warp_drag: None,
+        pending: None,
+        undo: Vec::new(),
+        redo: Vec::new(),
+    });
     app.ui.transform = Some(TransformSession {
         session,
         layer,
@@ -173,7 +243,17 @@ pub fn begin_selection(app: &mut PhotocraftApp, ctx: &egui::Context) -> Result<(
     let texture = crate::transform_tex::PreviewTextures::new(ctx, format!("transform-{session}"), egui::ColorImage::new([tw, th], px), uv);
     let mut pd = (*doc).clone();
     pd.selection = None;
-    app.transform_preview = Some(TransformPreview { session, doc: Arc::new(pd), texture, opacity: 1.0, gesture: None, warp_drag: None });
+    app.transform_preview = Some(TransformPreview {
+        session,
+        doc: Arc::new(pd),
+        texture,
+        opacity: 1.0,
+        gesture: None,
+        warp_drag: None,
+        pending: None,
+        undo: Vec::new(),
+        redo: Vec::new(),
+    });
     app.ui.transform = Some(TransformSession {
         session,
         layer: layer.0,
@@ -384,8 +464,20 @@ struct Gesture {
     pivot0: [f64; 2],
 }
 
-/// Pointer input while transforming. Returns false when no transform is active.
+/// Pointer input while transforming. Returns false when no transform is active. Each drag that
+/// changes the box is one ⌘Z step ([`step`]).
 pub fn pointer(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers) -> bool {
+    if let (ToolEvent::Down { .. }, Some(t), Some(pv)) = (ev, app.ui.transform.as_ref(), app.transform_preview.as_mut()) {
+        pv.pending = Some(Step::of(t));
+    }
+    let handled = drag_box(app, ev, mods);
+    if matches!(ev, ToolEvent::Up { .. }) {
+        record_step(app);
+    }
+    handled
+}
+
+fn drag_box(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers) -> bool {
     let Some(t) = app.ui.transform.clone() else { return false };
     let tol = 8.0 / app.current_zoom().max(0.01) as f64;
     if t.warp.is_some() {
@@ -404,7 +496,8 @@ pub fn pointer(app: &mut PhotocraftApp, ev: ToolEvent, mods: egui::Modifiers) ->
                 s.pivot = [x, y];
                 h = Hit::Pivot;
             }
-            pv.gesture = Some(Gesture { hit: h, start: [x, y], quad0: t.quad, pivot0: t.pivot });
+            // Distort only moves corners (and the whole box from inside): no rotating, no edges.
+            pv.gesture = distort_allows(t.mode, h).then_some(Gesture { hit: h, start: [x, y], quad0: t.quad, pivot0: t.pivot });
         }
         ToolEvent::Move { x, y, .. } | ToolEvent::Up { x, y } => {
             let g = pv.gesture;
@@ -662,13 +755,22 @@ pub fn split(app: &mut PhotocraftApp, id: &str, at: Option<[f64; 2]>) -> Result<
 }
 
 /// Cursor for hovering a document point while transforming.
+/// In Distort mode only corner drags (and moving the box from inside) do anything.
+fn distort_allows(mode: TransformMode, h: Hit) -> bool {
+    mode != TransformMode::Distort || !matches!(h, Hit::Outside | Hit::Edge(_))
+}
+
 pub fn cursor(app: &PhotocraftApp, p: [f64; 2]) -> Option<CursorIcon> {
     let t = app.ui.transform.as_ref()?;
     let tol = 8.0 / app.current_zoom().max(0.01) as f64;
     if let Some(w) = &t.warp {
         return Some(if w.style != WarpStyle::Custom || warp_hit(w, p, tol).is_some() { CursorIcon::Crosshair } else { CursorIcon::Default });
     }
-    Some(match hit(t, p, tol) {
+    let h = hit(t, p, tol);
+    if !distort_allows(t.mode, h) {
+        return Some(CursorIcon::Default);
+    }
+    Some(match h {
         Hit::Corner(0 | 2) => CursorIcon::ResizeNwSe,
         Hit::Corner(_) => CursorIcon::ResizeNeSw,
         Hit::Edge(0 | 2) => CursorIcon::ResizeVertical,
@@ -1096,6 +1198,75 @@ mod tests {
         let b = st.doc.layer(st.active_layer.unwrap()).unwrap().surface().unwrap().content_bounds();
         assert!(b.width().abs_diff(32) <= 2 && b.x0.abs_diff(0) <= 1, "{b:?}");
         assert!(app.ui.transform.is_none() && app.transform_preview.is_none());
+    }
+
+    #[test]
+    fn undo_and_redo_step_through_each_drag() {
+        let mut app = app_with_square(64, photocraft_geom::Rect::new(8, 8, 24, 24));
+        app.ui.extras.snap = false;
+        let ctx = egui::Context::default();
+        let history = app.session.active().unwrap().history.past_len();
+        crate::menus::invoke(&mut app, &ctx, "edit.transform.distort", json!({})).unwrap();
+        let q0 = app.ui.transform.as_ref().unwrap().quad;
+        assert!(!crate::menus::is_enabled(&app, "edit.undo"), "nothing to undo in the box yet");
+        let m = egui::Modifiers::NONE;
+        let drag = |app: &mut PhotocraftApp, from: [f64; 2], to: [f64; 2]| {
+            crate::canvas::tool_event(app, ToolEvent::Down { x: from[0], y: from[1], pressure: 1.0 }, m);
+            crate::canvas::tool_event(app, ToolEvent::Up { x: to[0], y: to[1] }, m);
+        };
+        drag(&mut app, q0[1], [30.0, 4.0]);
+        let q1 = app.ui.transform.as_ref().unwrap().quad;
+        drag(&mut app, q0[2], [28.0, 30.0]);
+        let q2 = app.ui.transform.as_ref().unwrap().quad;
+        assert!(q1 != q0 && q2 != q1);
+        // A click that changes nothing adds no step.
+        drag(&mut app, [16.0, 16.0], [16.0, 16.0]);
+        crate::menus::invoke(&mut app, &ctx, "edit.undo", json!({})).unwrap();
+        assert_eq!(app.ui.transform.as_ref().unwrap().quad, q1);
+        crate::menus::invoke(&mut app, &ctx, "edit.undo", json!({})).unwrap();
+        assert_eq!(app.ui.transform.as_ref().unwrap().quad, q0);
+        assert!(!crate::menus::is_enabled(&app, "edit.undo"));
+        crate::menus::invoke(&mut app, &ctx, "edit.redo", json!({})).unwrap();
+        assert_eq!(app.ui.transform.as_ref().unwrap().quad, q1);
+        // The document's own history was never touched.
+        assert_eq!(app.session.active().unwrap().history.past_len(), history);
+        assert!(app.ui.transform.is_some());
+    }
+
+    #[test]
+    fn undo_and_redo_step_through_each_drag_and_distort_moves_only_corners() {
+        let mut app = app_with_square(64, photocraft_geom::Rect::new(8, 8, 24, 24));
+        app.ui.extras.snap = false;
+        let ctx = egui::Context::default();
+        let history = app.session.active().unwrap().history.past_len();
+        crate::menus::invoke(&mut app, &ctx, "edit.transform.distort", json!({})).unwrap();
+        let q0 = app.ui.transform.as_ref().unwrap().quad;
+        assert!(!crate::menus::is_enabled(&app, "edit.undo"), "nothing to undo in the box yet");
+        let m = egui::Modifiers::NONE;
+        let drag = |app: &mut PhotocraftApp, from: [f64; 2], to: [f64; 2]| {
+            crate::canvas::tool_event(app, ToolEvent::Down { x: from[0], y: from[1], pressure: 1.0 }, m);
+            crate::canvas::tool_event(app, ToolEvent::Up { x: to[0], y: to[1] }, m);
+        };
+        let quad = |app: &PhotocraftApp| app.ui.transform.as_ref().unwrap().quad;
+        // Distort: dragging outside (rotate) or an edge does nothing, and adds no undo step.
+        drag(&mut app, [40.0, 40.0], [50.0, 10.0]);
+        drag(&mut app, [24.0, 16.0], [30.0, 16.0]);
+        assert_eq!(quad(&app), q0);
+        assert!(!crate::menus::is_enabled(&app, "edit.undo"));
+        drag(&mut app, q0[1], [30.0, 4.0]);
+        let q1 = quad(&app);
+        drag(&mut app, q0[2], [28.0, 30.0]);
+        assert!(q1 != q0 && quad(&app) != q1);
+        crate::menus::invoke(&mut app, &ctx, "edit.undo", json!({})).unwrap();
+        assert_eq!(quad(&app), q1);
+        crate::menus::invoke(&mut app, &ctx, "edit.undo", json!({})).unwrap();
+        assert_eq!(quad(&app), q0);
+        assert!(!crate::menus::is_enabled(&app, "edit.undo"));
+        crate::menus::invoke(&mut app, &ctx, "edit.redo", json!({})).unwrap();
+        assert_eq!(quad(&app), q1);
+        // The document's own history was never touched, and the box is still up.
+        assert_eq!(app.session.active().unwrap().history.past_len(), history);
+        assert!(app.ui.transform.is_some());
     }
 
     fn app_with_square(size: u32, fill: photocraft_geom::Rect) -> PhotocraftApp {

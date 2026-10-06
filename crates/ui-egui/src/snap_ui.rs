@@ -141,7 +141,11 @@ fn begin(app: &mut PhotocraftApp, p: [f64; 2]) {
     let tool = app.ui.tool;
     let tol = tolerance(app);
     let gesture = if let Some(t) = &app.ui.transform {
-        if near_handle(&t.quad, p, tol) {
+        if t.mode == crate::state::TransformMode::Distort {
+            // Distort is freehand corner placement (fitting an image onto a screen): guides and
+            // edges pulling the corners about only get in the way.
+            None
+        } else if near_handle(&t.quad, p, tol) {
             Some((Gesture::Point, vec![LayerId(t.layer)]))
         } else if in_quad(&t.quad, p) {
             Some((Gesture::TransformMove { rect: quad_rect(&t.quad) }, vec![LayerId(t.layer)]))
@@ -409,6 +413,21 @@ mod tests {
         assert!((q[1][0] - 350.0).abs() < 1e-6, "{q:?}");
         crate::transform_tool::commit(&mut app);
         assert_eq!(mover_bounds(&app).x0, 300);
+    }
+
+    #[test]
+    fn distort_mode_never_snaps() {
+        let mut app = app_with_box();
+        let ctx = egui::Context::default();
+        crate::menus::invoke(&mut app, &ctx, "edit.transform.distort", json!({})).unwrap();
+        let q = app.ui.transform.as_ref().unwrap().quad;
+        let m = egui::Modifiers::NONE;
+        // Drag the top-right corner to 2 px short of the target's right edge (x = 350).
+        crate::canvas::tool_event(&mut app, ToolEvent::Down { x: q[1][0], y: q[1][1], pressure: 1.0 }, m);
+        crate::canvas::tool_event(&mut app, ToolEvent::Up { x: 348.0, y: q[1][1] }, m);
+        let q = app.ui.transform.as_ref().unwrap().quad;
+        assert_eq!(q[1][0], 348.0, "the corner stays where it was dropped");
+        assert!(app.prefs_rt.snap_lines.is_empty());
     }
 
     #[test]
