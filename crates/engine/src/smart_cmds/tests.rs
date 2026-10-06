@@ -245,8 +245,9 @@ fn transforms_re_render_from_source_losslessly() {
     // Whole-pixel moves (Move tool) shift without re-rendering.
     smart.execute("layer.translate", json!({"dx": 3, "dy": -2})).unwrap();
     assert_eq!(active_smart(&smart).transform, Affine::translate(-3.0, 3.0));
-    // Perspective is refused (for now) rather than silently rasterizing.
-    assert!(smart.execute("edit.transform", json!({"layer": sid, "quad": [[0, 0], [10, 0], [12, 10], [-2, 10]]})).is_err());
+    // Perspective keeps the full projective placement (and stays a smart object).
+    smart.execute("edit.transform", json!({"layer": sid, "quad": [[0, 0], [10, 0], [12, 10], [-2, 10]]})).unwrap();
+    assert!(active_smart(&smart).perspective.is_some());
 }
 
 #[test]
@@ -499,4 +500,30 @@ fn smart_filter_blur_repeats_the_canvas_edge_like_a_layer_filter() {
         assert!((b[0][3] - 1.0).abs() < 1e-3, "corner alpha {}", b[0][3]);
         assert!(max_diff(&a, &b) < 2.0 / 255.0, "smart re-render matches the layer filter ({depth}-bit)");
     }
+}
+
+/// A distorted smart object keeps its fourth corner: through Edit Contents → Save (which
+/// re-renders from the source) the placement and the rendered corners don't move.
+#[test]
+fn distort_survives_edit_contents() {
+    let mut s = session(8);
+    paint(&mut s);
+    let id = convert(&mut s);
+    let r = active_smart(&s).cache.unwrap().content_bounds();
+    let (x0, y0, x1, y1) = (r.x0, r.y0, r.x1, r.y1);
+    // Distort: only the bottom-right corner moves (in by 12, up by 8): not a parallelogram.
+    let quad = json!([[x0, y0], [x1, y0], [x1 - 12, y1 - 8], [x0, y1]]);
+    s.execute("edit.transform", json!({"layer": id, "rect": [x0, y0, x1, y1], "quad": quad})).unwrap();
+    let placed = active_smart(&s);
+    assert!(placed.perspective.is_some(), "Distort keeps a projective placement");
+    let before = flat(&s);
+    s.execute("layer.smartObjects.editContents", json!({})).unwrap();
+    s.execute("layer.smartObjects.saveContents", json!({})).unwrap();
+    s.set_active(0);
+    assert_eq!(active_smart(&s).perspective, placed.perspective, "the placement survives the save");
+    assert!(mean_diff(&before, &flat(&s)) < 0.01, "the re-render matches the distorted look");
+    // The bottom-right of the original frame is now empty: the corner really moved in.
+    let sm = active_smart(&s);
+    let c = sm.cache.as_ref().unwrap();
+    assert_eq!(c.rgba(x1 - 2, y1 - 2)[3], 0.0, "no pixels where the corner used to be");
 }
