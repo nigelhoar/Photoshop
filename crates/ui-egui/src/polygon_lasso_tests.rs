@@ -1,4 +1,6 @@
-//! Polygonal Lasso through the real canvas: a double-click closes the polygon, as in Photoshop.
+//! Polygonal Lasso through the real canvas: a double-click closes the polygon, and a
+//! new-selection polygon hides the selection it replaces while it is drawn (⇧ or ⌥ at the first
+//! click keep it, to add to or subtract from), replacing it in one history step.
 
 use egui::{Modifiers, PointerButton, Pos2, vec2};
 use egui_kittest::Harness;
@@ -115,4 +117,92 @@ fn double_click_on_the_first_vertex_keeps_the_new_selection() {
     double_click(&mut h, 50.0, 50.0);
     assert!(h.state().ui.polygon.is_empty());
     assert!(selection(&h).is_some_and(|r| near(r, 50, 50, 150, 150)), "{:?}", selection(&h));
+}
+
+/// Three clicks and Enter: a triangle with corners at the first three points.
+fn triangle(h: &mut Harness<'static, PhotocraftApp>, x: f32, y: f32, m: Modifiers) {
+    h.event(egui::Event::ModifiersChanged(m));
+    h.run_steps(1);
+    for (dx, dy) in [(0.0, 0.0), (100.0, 0.0), (100.0, 100.0)] {
+        click(h, x + dx, y + dy, m);
+        h.run_steps(30); // Not a double-click with the click before.
+    }
+    h.event(egui::Event::ModifiersChanged(Modifiers::NONE));
+    h.run_steps(1);
+    h.key_press(egui::Key::Enter);
+    h.run_steps(2);
+}
+
+fn steps(h: &Harness<'static, PhotocraftApp>) -> usize {
+    h.state().session.active().unwrap().history.entries().len()
+}
+
+/// A new polygon hides the selection it will replace; Esc brings it back untouched.
+#[test]
+fn a_new_polygon_hides_the_selection_and_esc_restores_it() {
+    let mut h = harness();
+    h.state_mut().run("select.rect", json!({"x": 200, "y": 150, "width": 100, "height": 100})).unwrap();
+    h.run_steps(1);
+    let before = steps(&h);
+    click(&mut h, 20.0, 20.0, Modifiers::NONE);
+    assert_eq!(h.state().ui.polygon.len(), 1);
+    assert!(crate::canvas::polygon_replaces_selection(h.state()), "the old outline is hidden");
+    assert_eq!(steps(&h), before, "starting a polygon records nothing");
+    h.key_press(egui::Key::Escape);
+    h.run_steps(2);
+    assert!(h.state().ui.polygon.is_empty());
+    assert!(!crate::canvas::polygon_replaces_selection(h.state()));
+    assert!(selection(&h).is_some_and(|r| near(r, 200, 150, 300, 250)), "{:?}", selection(&h));
+    assert_eq!(steps(&h), before);
+}
+
+/// Replacing a selection is one history step, and one Undo brings the old selection back.
+#[test]
+fn replacing_a_selection_is_one_history_step() {
+    let mut h = harness();
+    h.state_mut().run("select.rect", json!({"x": 200, "y": 150, "width": 100, "height": 100})).unwrap();
+    h.run_steps(1);
+    let before = steps(&h);
+    triangle(&mut h, 20.0, 20.0, Modifiers::NONE);
+    assert!(selection(&h).is_some_and(|r| near(r, 20, 20, 120, 120)), "{:?}", selection(&h));
+    assert_eq!(steps(&h), before + 1);
+    h.state_mut().run("edit.undo", json!({})).unwrap();
+    assert!(selection(&h).is_some_and(|r| near(r, 200, 150, 300, 250)), "{:?}", selection(&h));
+}
+
+/// ⇧ (add) and ⌥ (subtract) at the first click keep the selection in view, and the polygon
+/// combines in that mode even when it is closed with a bare Enter.
+#[test]
+fn modifiers_at_the_first_click_keep_and_combine_the_selection() {
+    let mut h = harness();
+    h.state_mut().run("select.rect", json!({"x": 200, "y": 150, "width": 100, "height": 100})).unwrap();
+    h.run_steps(1);
+    for m in [Modifiers::SHIFT, Modifiers::ALT] {
+        h.event(egui::Event::ModifiersChanged(m));
+        h.run_steps(1);
+        click(&mut h, 20.0, 20.0, m);
+        h.event(egui::Event::ModifiersChanged(Modifiers::NONE));
+        h.run_steps(1);
+        assert_eq!(h.state().ui.polygon.len(), 1, "{m:?}");
+        assert!(!crate::canvas::polygon_replaces_selection(h.state()), "{m:?}: the selection stays in view");
+        h.key_press(egui::Key::Escape);
+        h.run_steps(30);
+    }
+    triangle(&mut h, 20.0, 20.0, Modifiers::SHIFT);
+    assert!(selection(&h).is_some_and(|r| near(r, 20, 20, 300, 250)), "added: {:?}", selection(&h));
+}
+
+/// A new polygon over no selection records one step: the selection it makes.
+#[test]
+fn a_new_polygon_without_a_selection_adds_one_step() {
+    let mut h = harness();
+    let before = steps(&h);
+    click(&mut h, 20.0, 20.0, Modifiers::NONE);
+    assert_eq!(h.state().ui.polygon.len(), 1);
+    assert_eq!(steps(&h), before);
+    h.run_steps(30);
+    h.key_press(egui::Key::Escape);
+    h.run_steps(30);
+    triangle(&mut h, 20.0, 20.0, Modifiers::NONE);
+    assert_eq!(steps(&h), before + 1);
 }
