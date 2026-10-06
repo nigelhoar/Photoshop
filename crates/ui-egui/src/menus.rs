@@ -169,6 +169,10 @@ pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id:
     if let Some(r) = crate::view_cmds::invoke(app, ctx, id, &params) {
         return r;
     }
+    // Undo / Redo inside Free Transform step through the box's changes.
+    if let Some(r) = crate::transform_tool::menu(app, id) {
+        return r;
+    }
     // Liquify dialog, Puppet Warp and Perspective Warp modes (and their control params).
     if let Some(r) = crate::distort_ui::menu(app, ctx, id, &params) {
         return r;
@@ -451,6 +455,9 @@ pub fn is_enabled(app: &PhotocraftApp, id: &str) -> bool {
         return e;
     }
     if let Some(e) = crate::plugin_ui::is_enabled(app, id) {
+        return e;
+    }
+    if let Some(e) = crate::transform_tool::is_enabled(app, id) {
         return e;
     }
     match id {
