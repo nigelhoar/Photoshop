@@ -273,9 +273,13 @@ fn hex_color(s: &str, fallback: Color32) -> Color32 {
 pub fn draw(app: &PhotocraftApp, painter: &egui::Painter, xf: &ViewXform) {
     let Some(snap) = &app.prefs_rt.snap else { return };
     let smart_color = hex_color(&app.session.prefs().guides_grid_and_slices.smart_guide_color, Color32::from_rgb(255, 0, 255));
-    // The moved layers' bounds follow the Move tool (Free Transform draws its own box).
-    if let (Gesture::Move { rect }, Some(d)) =
-        (&snap.gesture, app.drag.as_ref().and_then(|d| d.points.last()).map(|p| [p[0] - snap.start[0], p[1] - snap.start[1]]))
+    // The moved layers' bounds follow the Move tool (Free Transform draws its own box), when
+    // Preferences › Interface asks for it (else the layers themselves follow, `move_ui`).
+    if let (Gesture::Move { rect }, Some(d), true) = (
+        &snap.gesture,
+        app.drag.as_ref().and_then(|d| d.points.last()).map(|p| [p[0] - snap.start[0], p[1] - snap.start[1]]),
+        app.session.prefs().interface.show_bounding_box_when_dragging_layer,
+    )
     {
         let r = egui::Rect::from_two_pos(
             xf.to_screen((rect[0] + d[0]) as f32, (rect[1] + d[1]) as f32),

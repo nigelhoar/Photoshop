@@ -211,6 +211,8 @@ pub struct Interface {
     /// Draw menu item colours set with Edit › Menus.
     pub show_menu_colors: bool,
     pub show_tooltips: bool,
+    /// Move tool drags show the layer's outline and an arrow instead of moving its pixels live.
+    pub show_bounding_box_when_dragging_layer: bool,
 }
 
 impl Default for Interface {
@@ -227,6 +229,7 @@ impl Default for Interface {
             dynamic_color_sliders: true,
             show_menu_colors: true,
             show_tooltips: true,
+            show_bounding_box_when_dragging_layer: false,
         }
     }
 }
