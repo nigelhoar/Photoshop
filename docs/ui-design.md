@@ -84,12 +84,15 @@ the tests enforce it):
 
 - English (`en`), the source language.
 - Japanese (`ja`), complete.
-- Simplified Chinese (`zh-hans`; see [`localization-zh-hans.md`](localization-zh-hans.md)), partial.
+- Simplified Chinese (`zh-hans`; see [`localization-zh-hans.md`](localization-zh-hans.md)), complete.
 - Traditional Chinese (`zh-hant`), complete, in the vocabulary used in Taiwan; `zh-TW`, `zh-HK`,
   `zh-MO` and `zh-Hant-*` locales all resolve to it. The resolver distinguishes the two Chinese
   scripts, so neither catalog is shown to the other script's locales.
 - Spanish (`es`), complete.
 - Russian (`ru`), complete, with three plural forms (`one|few|many`, see `plural_russian`).
+- Korean (`ko`), complete, with one plural form.
+- French (`fr`), complete, with two plural forms (0 and 1 use the singular).
+- Czech (`cs`), complete, with three plural forms.
 
 - `tr(lang, s)` plain strings; `tr_ctx` when one English word needs different translations;
   `tr_id(lang, command_id, label)` for menu items (keyed by command id, English label as the
@@ -97,6 +100,9 @@ the tests enforce it):
   translators may reorder.
 - The language is Preferences › Interface › Language (`interface.language`: `auto` or a language
   code; `auto` follows the system locale, an unknown code falls back to `auto`).
+- Language changes apply without a restart; Preferences previews the chosen language until
+  Apply or OK commits it. Cancel restores the committed language. Regional preference tags
+  resolve through the same locale matcher. See [`localization.md`](localization.md).
 - To add a language: add `<code>.tsv` and one row in `i18n::LANGUAGES` (code, native name, catalog,
   plural rule). The dropdown, locale matching and the catalog tests (well-formed, no duplicates,
   placeholders and ellipses agree, command ids exist) pick it up. Set `complete_menus` once every
@@ -111,6 +117,8 @@ themselves). A test fails when a `tl!` literal, a menu string, a blend mode name
 preference label has no entry in a language marked `complete_menus`. Not translated: status-bar
 messages and errors (they stay English, also for agents), names that are user data (layers, styles,
 documents), strings assembled with `format!` that were not converted to `fmt`/`trn`. Not done yet:
-per-language font fallback (the CJK fallback prefers Japanese forms), right-to-left layout,
+right-to-left layout,
 locale-aware number and date formats, automatic language detection on the web build (native
 builds read `LANG`/`LC_*`, the macOS preferred languages and the Windows user locale).
+Native CJK font fallback follows the selected UI script and resets its cache when switching
+languages; font delivery on the web remains separate work.

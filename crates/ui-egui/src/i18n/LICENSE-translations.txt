@@ -1,0 +1,13 @@
+PhotoCraft translation catalogs are licensed under MIT OR Apache-2.0, at your option.
+The full license texts are in ../../../../LICENSE-MIT and ../../../../LICENSE-APACHE.
+
+Korean translations and additions: PhotoCraft contributors, original work.
+French translations: Simon Leblanc (leblanc-simon), PhotoCraft PR #410,
+commit 03577aeb7f255ae21e72eb937a6ceef1fd2b3580; adapted to current English keys.
+Simplified Chinese additions: flyyangX, PhotoCraft PR #359,
+commit 25123f1566eaab7ec2792353d9bf67832b83fbc6, and PhotoCraft contributors.
+Existing Simplified Chinese translations retain their original contribution license.
+
+Sources:
+https://github.com/storytold/photocraft/pull/410
+https://github.com/storytold/photocraft/pull/359
