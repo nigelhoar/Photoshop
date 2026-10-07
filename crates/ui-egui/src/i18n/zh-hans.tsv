@@ -172,14 +172,13 @@
 	Lab Color	Lab 颜色
 	Multichannel	多通道
 	8 Bits/Channel	8 位/通道
-	8 Bits/Channel (Integer)	8 位/通道（整数）
-	8-bit Integer	8 位整数
+	8 bit	8 位
+	Integer	整数
 	16 Bits/Channel	16 位/通道
-	16 Bits/Channel (Integer)	16 位/通道（整数）
-	16-bit Integer	16 位整数
+	16 bit	16 位
 	32 Bits/Channel	32 位/通道
-	32 Bits/Channel (Floating Point)	32 位/通道（浮点数）
-	32-bit Floating Point	32 位浮点数
+	32 bit (float)	32 位（浮点）
+	Floating point	浮点数
 	Color Table…	颜色表…
 	Bitmap…	位图…
 	Duotone…	双色调…

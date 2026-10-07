@@ -73,11 +73,7 @@ pub const CATEGORIES: &[(&str, &[Preset])] = &[
     ),
 ];
 
-const DEPTH_OPTIONS: &[(u64, &str)] = &[
-    (8, "8-bit Integer"),
-    (16, "16-bit Integer"),
-    (32, "32-bit Floating Point"),
-];
+const DEPTH_OPTIONS: &[(u64, &str, &str)] = &[(8, "8 bit", "Integer"), (16, "16 bit", "Integer"), (32, "32 bit (float)", "Floating point")];
 
 /// Width/Height units: (key, label, units per inch; 0 = pixels).
 pub const UNITS: &[(&str, &str, f32)] =
@@ -286,8 +282,8 @@ pub fn body(ui: &mut egui::Ui, f: &mut Map<String, Value>) {
                     f.insert("mode".into(), json!(mode));
                 }
                 let mut depth = f.get("depth").and_then(Value::as_u64).unwrap_or(8);
-                let depth_options: Vec<(u64, &str)> = DEPTH_OPTIONS.iter().map(|(bits, label)| (*bits, tl!(label))).collect();
-                if widgets::dropdown(ui, "nd-depth", &mut depth, &depth_options, 160.0) {
+                let depth_options: Vec<(u64, &str, &str)> = DEPTH_OPTIONS.iter().map(|(bits, label, tooltip)| (*bits, *label, *tooltip)).collect();
+                if widgets::dropdown_with_tooltips(ui, "nd-depth", &mut depth, &depth_options, 120.0) {
                     f.insert("depth".into(), json!(depth));
                 }
             });
@@ -320,14 +316,11 @@ mod tests {
     }
 
     #[test]
-    fn new_document_depth_options_identify_integer_and_float_samples() {
-        assert_eq!(
-            DEPTH_OPTIONS,
-            &[(8, "8-bit Integer"), (16, "16-bit Integer"), (32, "32-bit Floating Point")]
-        );
+    fn new_document_depth_labels_and_tooltips_are_translated() {
         for lang in crate::i18n::Lang::all().filter(|lang| lang.code() != "en") {
-            for (_, label) in DEPTH_OPTIONS {
+            for (_, label, tooltip) in DEPTH_OPTIONS {
                 assert_ne!(crate::i18n::tr(lang, label), *label, "{}: {label}", lang.code());
+                assert_ne!(crate::i18n::tr(lang, tooltip), *tooltip, "{}: {tooltip}", lang.code());
             }
         }
     }

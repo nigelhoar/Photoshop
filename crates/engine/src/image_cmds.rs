@@ -421,9 +421,9 @@ pub fn specs() -> Vec<CommandSpec> {
             has_doc,
             |s, p| convert_mode(s, ColorMode::Lab, p)
         ),
-        spec!("image.mode.bits8", "8 Bits/Channel", ["Image", "Mode"], "{}", has_doc, |s, _| convert_depth(s, SampleType::U8)),
-        spec!("image.mode.bits16", "16 Bits/Channel", ["Image", "Mode"], "{}", has_doc, |s, _| convert_depth(s, SampleType::U16)),
-        spec!("image.mode.bits32", "32 Bits/Channel", ["Image", "Mode"], "{}", has_doc, |s, _| convert_depth(s, SampleType::F32)),
+        spec!("image.mode.bits8", "8 bit", ["Image", "Mode"], "{}", has_doc, |s, _| convert_depth(s, SampleType::U8)),
+        spec!("image.mode.bits16", "16 bit", ["Image", "Mode"], "{}", has_doc, |s, _| convert_depth(s, SampleType::U16)),
+        spec!("image.mode.bits32", "32 bit (float)", ["Image", "Mode"], "{}", has_doc, |s, _| convert_depth(s, SampleType::F32)),
         spec!("image.duplicate", "Duplicate…", ["Image"], r##"{"name":str,"mergedOnly":bool=false}"##, has_doc, duplicate),
     ]
 }

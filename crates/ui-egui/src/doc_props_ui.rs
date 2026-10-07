@@ -35,9 +35,9 @@ pub const MODES: &[(ColorMode, &str, &str)] = &[
 ];
 
 pub const DEPTHS: &[(SampleType, &str, &str)] = &[
-    (SampleType::U8, "8 Bits/Channel (Integer)", "image.mode.bits8"),
-    (SampleType::U16, "16 Bits/Channel (Integer)", "image.mode.bits16"),
-    (SampleType::F32, "32 Bits/Channel (Floating Point)", "image.mode.bits32"),
+    (SampleType::U8, "8 Bits/Channel", "image.mode.bits8"),
+    (SampleType::U16, "16 Bits/Channel", "image.mode.bits16"),
+    (SampleType::F32, "32 Bits/Channel", "image.mode.bits32"),
 ];
 
 /// Ruler units offered in the Rulers & Grids dropdown (`unitsAndRulers.rulers` values).
@@ -190,8 +190,9 @@ pub fn properties(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.add_space(label_w + 8.0);
             let mut d = depth;
-            let opts: Vec<(SampleType, &str)> = DEPTHS.iter().map(|(d, l, _)| (*d, *l)).collect();
-            if widgets::dropdown(ui, "doc-props-depth", &mut d, &opts, 150.0)
+            let opts: Vec<(SampleType, &str, &str)> =
+                DEPTHS.iter().map(|(d, l, _)| (*d, *l, if *d == SampleType::F32 { "Floating point" } else { "Integer" })).collect();
+            if widgets::dropdown_with_tooltips(ui, "doc-props-depth", &mut d, &opts, 150.0)
                 && let Some((_, _, id)) = DEPTHS.iter().find(|(x, _, _)| *x == d)
             {
                 run.push(((*id).to_string(), Value::Null));
@@ -320,11 +321,7 @@ mod tests {
     fn image_mode_depth_labels_match_sample_types_and_are_translated() {
         assert_eq!(
             DEPTHS.iter().map(|(sample, label, _)| (*sample, *label)).collect::<Vec<_>>(),
-            [
-                (SampleType::U8, "8 Bits/Channel (Integer)"),
-                (SampleType::U16, "16 Bits/Channel (Integer)"),
-                (SampleType::F32, "32 Bits/Channel (Floating Point)"),
-            ]
+            [(SampleType::U8, "8 Bits/Channel"), (SampleType::U16, "16 Bits/Channel"), (SampleType::F32, "32 Bits/Channel"),]
         );
         for lang in crate::i18n::Lang::all().filter(|lang| lang.code() != "en") {
             for (_, label, id) in DEPTHS {
