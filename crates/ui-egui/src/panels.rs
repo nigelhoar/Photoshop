@@ -456,19 +456,11 @@ pub fn options_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                         if widgets::dropdown(ui, "brush-mode", &mut mode, &opts, 96.0) {
                             b.mode = mode;
                         }
-                        opt_label(ui, tl!("Opacity"));
-                        let mut o = b.opacity * 100.0;
-                        if widgets::value_field(ui, &mut o, 0.0..=100.0, "%", 62.0).changed() {
-                            b.opacity = o / 100.0;
-                        }
+                        percent_field(ui, tl!("Opacity"), &mut b.opacity, 0.0..=100.0, 62.0);
                         if icons::button(ui, "circle-dot", 24.0, b.pressure_opacity, tl!("Always use pressure for opacity")).clicked() {
                             b.pressure_opacity = !b.pressure_opacity;
                         }
-                        opt_label(ui, tl!("Flow"));
-                        let mut f = b.flow * 100.0;
-                        if widgets::value_field(ui, &mut f, 1.0..=100.0, "%", 62.0).changed() {
-                            b.flow = f / 100.0;
-                        }
+                        percent_field(ui, tl!("Flow"), &mut b.flow, 1.0..=100.0, 62.0);
                         let _ = icons::button(ui, "sparkles", 24.0, false, tl!("Enable airbrush-style build-up effects"));
                         opt_label(ui, tl!("Smoothing"));
                         smoothing_field(ui, b, 58.0);
@@ -495,11 +487,7 @@ pub fn options_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                         if widgets::dropdown(ui, "pencil-mode", &mut mode, &opts, 96.0) {
                             b.mode = mode;
                         }
-                        opt_label(ui, tl!("Opacity"));
-                        let mut o = b.opacity * 100.0;
-                        if widgets::value_field(ui, &mut o, 0.0..=100.0, "%", if t.pro { 62.0 } else { 66.0 }).changed() {
-                            b.opacity = o / 100.0;
-                        }
+                        percent_field(ui, tl!("Opacity"), &mut b.opacity, 0.0..=100.0, if t.pro { 62.0 } else { 66.0 });
                         opt_label(ui, tl!("Smoothing"));
                         smoothing_field(ui, b, if t.pro { 58.0 } else { 66.0 });
                         widgets::vline(ui, 22.0);
@@ -512,21 +500,9 @@ pub fn options_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                         opt_label(ui, tl!("Size"));
                         widgets::value_field(ui, &mut b.size, 1.0..=2500.0, "px", 76.0);
                         widgets::vline(ui, 22.0);
-                        opt_label(ui, tl!("Hardness"));
-                        let mut h = b.hardness * 100.0;
-                        if widgets::value_field(ui, &mut h, 0.0..=100.0, "%", 66.0).changed() {
-                            b.hardness = h / 100.0;
-                        }
-                        opt_label(ui, tl!("Opacity"));
-                        let mut o = b.opacity * 100.0;
-                        if widgets::value_field(ui, &mut o, 0.0..=100.0, "%", 66.0).changed() {
-                            b.opacity = o / 100.0;
-                        }
-                        opt_label(ui, tl!("Flow"));
-                        let mut f = b.flow * 100.0;
-                        if widgets::value_field(ui, &mut f, 1.0..=100.0, "%", 66.0).changed() {
-                            b.flow = f / 100.0;
-                        }
+                        percent_field(ui, tl!("Hardness"), &mut b.hardness, 0.0..=100.0, 66.0);
+                        percent_field(ui, tl!("Opacity"), &mut b.opacity, 0.0..=100.0, 66.0);
+                        percent_field(ui, tl!("Flow"), &mut b.flow, 1.0..=100.0, 66.0);
                         opt_label(ui, tl!("Smoothing"));
                         smoothing_field(ui, b, 66.0);
                         widgets::vline(ui, 22.0);
@@ -543,11 +519,7 @@ pub fn options_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                             (tl!("Mix"), &mut b.mixer.mix),
                             (tl!("Flow"), &mut b.mixer.flow),
                         ] {
-                            opt_label(ui, label);
-                            let mut percent = *value * 100.0;
-                            if widgets::value_field(ui, &mut percent, 0.0..=100.0, "%", 62.0).changed() {
-                                *value = percent / 100.0;
-                            }
+                            percent_field(ui, label, value, 0.0..=100.0, 62.0);
                         }
                         widgets::vline(ui, 22.0);
                         widgets::checkbox(ui, &mut b.mixer.sample_all_layers, tl!("Sample All Layers"));
@@ -853,6 +825,14 @@ fn opt_label(ui: &mut egui::Ui, s: &str) {
     let t = Tokens::get(ui.ctx());
     let text = if t.pro && !s.ends_with(':') { format!("{s}:") } else { s.to_string() };
     ui.label(RichText::new(tl!(&text)).color(t.text_dim));
+}
+
+fn percent_field(ui: &mut egui::Ui, label: &str, value: &mut f32, range: std::ops::RangeInclusive<f32>, width: f32) {
+    opt_label(ui, label);
+    let mut percent = *value * 100.0;
+    if widgets::value_field(ui, &mut percent, range, "%", width).changed() {
+        *value = percent / 100.0;
+    }
 }
 
 fn hint(ui: &mut egui::Ui, s: &str) {

@@ -49,7 +49,7 @@ pub fn tool_icon(t: Tool) -> &'static str {
         Tool::EllipseMarquee => "circle-dashed",
         Tool::Brush => "brush",
         Tool::Pencil => "pencil",
-        Tool::MixerBrush => "brush-cleaning",
+        Tool::MixerBrush => "palette",
         Tool::Eraser => "eraser",
         Tool::BackgroundEraser => "eraser-background",
         Tool::MagicEraser => "eraser-magic",
