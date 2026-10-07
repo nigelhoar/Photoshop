@@ -152,7 +152,7 @@ fn tl_keys(sources: &[(PathBuf, String)]) -> BTreeSet<Key> {
         if path.ends_with("i18n/mod.rs") {
             continue;
         }
-        let code = source.split("#[cfg(test)]\nmod ").next().unwrap_or(source);
+        let code = before_test_module(source);
         let mut rest = code;
         while let Some(at) = rest.find("tl!(\"") {
             rest = rest.get(at + 5..).unwrap_or("");
@@ -178,7 +178,7 @@ fn plural_keys(sources: &[(PathBuf, String)]) -> BTreeSet<Key> {
         if path.ends_with("i18n/mod.rs") {
             continue;
         }
-        let code = source.split("#[cfg(test)]\nmod ").next().unwrap_or(source);
+        let code = before_test_module(source);
         let mut rest = code;
         while let Some(at) = rest.find("trn(") {
             rest = rest.get(at + 4..).unwrap_or("");
@@ -229,7 +229,7 @@ fn engine_command_labels(sources: &[(PathBuf, String)]) -> BTreeSet<Key> {
     let mut keys = BTreeSet::new();
     let mut command_macros = HashSet::new();
     for (_, source) in sources {
-        let mut rest = source.as_str();
+        let mut rest = before_test_module(source);
         while let Some(at) = rest.find("macro_rules!") {
             rest = rest.get(at + "macro_rules!".len()..).unwrap_or("");
             let name = rest.trim_start().split(|c: char| !c.is_ascii_alphanumeric() && c != '_').next().unwrap_or("");
@@ -244,7 +244,7 @@ fn engine_command_labels(sources: &[(PathBuf, String)]) -> BTreeSet<Key> {
         }
     }
     for (_, source) in sources {
-        let code = source.split("#[cfg(test)]\nmod ").next().unwrap_or(source);
+        let code = before_test_module(source);
         let mut rest = code;
         while let Some(at) = rest.find("CommandSpec {") {
             rest = rest.get(at + "CommandSpec {".len()..).unwrap_or("");
@@ -279,6 +279,20 @@ fn engine_command_labels(sources: &[(PathBuf, String)]) -> BTreeSet<Key> {
         }
     }
     keys
+}
+
+fn before_test_module(source: &str) -> &str {
+    let marker = "#[cfg(test)]";
+    let mut offset = 0;
+    while let Some(relative) = source.get(offset..).and_then(|rest| rest.find(marker)) {
+        let start = offset + relative;
+        let after_attribute = source.get(start + marker.len()..).unwrap_or("").trim_start();
+        if after_attribute.strip_prefix("mod").is_some_and(|rest| rest.chars().next().is_some_and(char::is_whitespace)) {
+            return source.get(..start).unwrap_or(source);
+        }
+        offset = start + marker.len();
+    }
+    source
 }
 
 fn menu_command_label(args: &str) -> Option<String> {
@@ -528,6 +542,17 @@ mod tests {
     fn plural_keys_come_from_source_calls() {
         let sources = vec![(PathBuf::from("ui.rs"), r#"trn(lang, count, "{n} layer", "{n} layers");"#.into())];
         assert!(plural_keys(&sources).contains(&Key { context: "@plural".into(), source: "{n} layer|{n} layers".into() }));
+    }
+
+    #[test]
+    fn source_scanner_ignores_test_modules_with_lf_and_crlf() {
+        for newline in ["\n", "\r\n"] {
+            let source = format!("tl!(\"production key\");{newline}#[cfg(test)]{newline}mod tests {{{newline}tl!(\"test fixture key\");{newline}}}{newline}");
+            let sources = vec![(PathBuf::from("ui.rs"), source)];
+            let keys = tl_keys(&sources);
+            assert!(keys.contains(&Key { context: String::new(), source: "production key".into() }));
+            assert!(!keys.contains(&Key { context: String::new(), source: "test fixture key".into() }));
+        }
     }
 
     #[test]
