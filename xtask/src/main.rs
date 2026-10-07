@@ -3,6 +3,7 @@
 //! Pure Rust (std + serde_json). External tools (`cargo`, `curl`, `tar`) are
 //! invoked through `std::process::Command`.
 
+mod contributors;
 mod corpus;
 mod corpus_pins;
 mod ico;
@@ -24,6 +25,8 @@ commands:
   layers          enforce the crate dependency layering (plan/architecture.md §3)
   wasm            cargo check --target wasm32-unknown-unknown for the wasm-safe crates
   ci              fmt --check, clippy -D warnings, test, layers, wasm (stops at first failure)
+  contributors    refresh contributors/commits.tsv and prs.tsv from GitHub (`gh api`) and git
+                  trailers (the About window's credits); prints unmapped Co-Authored-By names
   corpus [--all | --pngsuite | --psd | --psd-tools | --photoshop] [--local] [--update-manifest]
                   show where test corpora live and their pins (xtask/src/corpus_pins.rs), or fetch
                   them into corpus/ (pinned commits, sha256-verified; --all = every corpus;
@@ -52,6 +55,7 @@ fn main() -> ExitCode {
         Some("layers") => cmd_layers(),
         Some("wasm") => cmd_wasm(),
         Some("ci") => cmd_ci(),
+        Some("contributors") => contributors::run(&root()),
         Some("corpus") => corpus::cmd(&rest),
         Some("test-corpus") => corpus::test_cmd(&rest),
         Some("stats") => stats::run(&root(), rest.contains(&"--exact")),

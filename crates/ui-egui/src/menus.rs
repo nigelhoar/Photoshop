@@ -289,7 +289,14 @@ pub(crate) fn invoke_unguarded(app: &mut PhotocraftApp, ctx: &egui::Context, id:
             app.ui.palette_open = !app.ui.palette_open;
             Ok(Value::Null)
         }
-        "help.about" => Ok(json!({"dialog": app.ui.open_dialog(DialogKind::About, Default::default())})),
+        "help.about" => {
+            // `{tab: "contributors" | "models"}` opens the About window on the credits.
+            let mut fields = serde_json::Map::new();
+            if let Some(tab) = params.get("tab").and_then(Value::as_str) {
+                fields.insert("tab".into(), json!(tab));
+            }
+            Ok(json!({"dialog": app.ui.open_dialog(DialogKind::About, fields)}))
+        }
         "help.systemInfo" => {
             let mut fields = serde_json::Map::new();
             fields.insert("systemInfo".into(), json!(true));

@@ -74,6 +74,13 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
             } else {
                 440.0
             }));
+            if d.kind == DialogKind::About
+                && let Some(w) = crate::about_ui::width(&d.fields)
+            {
+                let w = w.min(ctx.content_rect().width() - 60.0).max(380.0);
+                ui.set_min_width(w);
+                ui.set_max_width(w);
+            }
             if let Some(w) = crate::file_ui::dialog_width(&d.fields) {
                 ui.set_min_width(w);
                 ui.set_max_width(w);
@@ -96,18 +103,7 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
                         ui.ctx().copy_text(lines.join("\n"));
                     }
                 }
-                DialogKind::About => {
-                    ui.label(tl!("PhotoCraft — an open-source, native image editor written in Rust."));
-                    ui.label(crate::i18n::fmt(tl!("Version {version}"), &[("version", &photocraft_engine::build_info::long_version())]));
-                    ui.add_space(12.0);
-                    ui.vertical_centered(|ui| {
-                        crate::links::discord_button(app, ui, 220.0);
-                        ui.add_space(8.0);
-                        crate::links::link_row(app, ui);
-                    });
-                    ui.add_space(10.0);
-                    ui.weak("egui · wgpu · photocraft-engine");
-                }
+                DialogKind::About => crate::about_ui::body(app, ui, &mut fields),
                 DialogKind::Command if crate::fill_ui::owns(&fields) => crate::fill_ui::body(app, ui, &mut fields),
                 DialogKind::Command if crate::rasterize_prompt::owns(&fields) => crate::rasterize_prompt::body(ui, &fields),
                 DialogKind::Command if crate::variables_ui::owns(&fields) => crate::variables_ui::body(app, ui, &mut fields),

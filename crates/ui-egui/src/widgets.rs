@@ -115,6 +115,8 @@ pub fn pill_tab(ui: &mut Ui, label: &str, selected: bool) -> Response {
     let galley = ui.painter().layout_no_wrap(tl!(label).to_owned(), font, t.text);
     let size = vec2(galley.size().x + 20.0, 24.0);
     let (rect, resp) = ui.allocate_exact_size(size, Sense::click());
+    // Screen readers and kittest find the tab by its (translated) label.
+    resp.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::SelectableLabel, ui.is_enabled(), selected, galley.text()));
     if selected {
         surface(ui, rect, t.hover, true);
         if !t.bevel {

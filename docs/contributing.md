@@ -10,6 +10,7 @@
 - **Style:** `cargo fmt`, and `cargo clippy -- -D warnings`. Match surrounding code. Comments explain *why*.
 - **UI:** use `theme::Tokens` and `widgets::*`. Verify visually (offscreen `snapshot` example or the control channel) before submitting, and attach before/after screenshots to PRs.
 - **Commits:** small, focused, with a clear subject line.
+- **Credits:** the About window lists contributors by GitHub login and the AI models named in `Co-Authored-By` trailers (`contributors/*.tsv`, refreshed by `cargo xtask contributors` before releases; standard: `../craftrules/standards/contributors.md`). Names and emails appear only with consent recorded in `contributors/people.tsv`; never add them from GitHub profiles or git author fields.
 
 ## Adding a command
 

@@ -19,7 +19,10 @@ and ids stay lowercase (`photocraft-<version>-<platform>-<arch>.<ext>`, `ai.stor
    cargo xtask version set 0.2.0       # or 0.2.0-rc.1; updates Cargo.toml and Cargo.lock
    ```
 
-   Commit the change (`Cargo.toml` + `Cargo.lock`) through the normal review flow.
+   Commit the change (`Cargo.toml` + `Cargo.lock`) through the normal review flow. In the same
+   change, refresh the About window's credits with `cargo xtask contributors` (needs `gh`) and
+   commit `contributors/commits.tsv` and `prs.tsv`; map any new model it reports in
+   `contributors/models.tsv`.
 2. **Merge `main` into `release`** (or fast-forward it) and push. The workflow starts by itself.
 3. **Wait for the draft.** After about 30 to 45 minutes (notarization is the slow part), the
    Releases page has a draft `PhotoCraft v0.2.0`, tagged `v0.2.0` on the pushed commit, with

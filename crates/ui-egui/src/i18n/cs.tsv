@@ -1453,6 +1453,32 @@
 	{name} options	Možnosti – {name}
 	↑↓ navigate   {key} run   esc close	↑↓ pohyb   {key} spustit   esc zavřít
 	Version {version}	Verze {version}
+# About window: Contributors and Models tabs
+	About	O aplikaci
+	Contributors	Přispěvatelé
+	Models	Modely
+	GitHub username	Uživatelské jméno na GitHubu
+	Display name	Zobrazované jméno
+	Real name	Skutečné jméno
+	First contribution	První příspěvek
+	Last contribution	Poslední příspěvek
+	Merged PRs	Sloučené PR
+	Commits	Commity
+	Lines added	Přidané řádky
+	Lines removed	Odebrané řádky
+	First merge	První sloučení
+	Last merge	Poslední sloučení
+	Company	Společnost
+	Model	Model
+	Version	Verze
+	% of AI-assisted	% z commitů s AI
+	% of all commits	% ze všech commitů
+	PRs	PR
+	Pull requests	Žádosti o sloučení
+	No contributor data in this build.	Toto sestavení neobsahuje data o přispěvatelích.
+	No model data in this build.	Toto sestavení neobsahuje data o modelech.
+	Select a contributor to list their pull requests and commits.	Vyberte přispěvatele a zobrazí se jeho žádosti o sloučení a commity.
+	From the Co-Authored-By trailers of commits on the main branch.	Podle řádků Co-Authored-By v commitech hlavní větve.
 	New Document	Nový dokument
 	Error	Chyba
 	Command	Příkaz

@@ -1255,6 +1255,31 @@
 	Software	Программа
 	Raw Data	Необработанные данные
 	Version {version}	Версия {version}
+# About window: Contributors and Models tabs
+	About	О программе
+	Contributors	Участники
+	Models	Модели
+	GitHub username	Имя пользователя GitHub
+	Display name	Отображаемое имя
+	Real name	Настоящее имя
+	First contribution	Первый вклад
+	Last contribution	Последний вклад
+	Merged PRs	Принятые PR
+	Commits	Коммиты
+	Lines added	Добавлено строк
+	Lines removed	Удалено строк
+	First merge	Первое слияние
+	Last merge	Последнее слияние
+	Company	Компания
+	Version	Версия
+	% of AI-assisted	% от коммитов с ИИ
+	% of all commits	% от всех коммитов
+	PRs	PR
+	Pull requests	Запросы на слияние
+	No contributor data in this build.	В этой сборке нет данных об участниках.
+	No model data in this build.	В этой сборке нет данных о моделях.
+	Select a contributor to list their pull requests and commits.	Выберите участника, чтобы увидеть его запросы на слияние и коммиты.
+	From the Co-Authored-By trailers of commits on the main branch.	По строкам Co-Authored-By в коммитах основной ветки.
 	Advanced	Дополнительно
 	Import…	Импортировать…
 

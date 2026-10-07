@@ -1438,6 +1438,32 @@
 	{name} options	Opciones de {name}
 	↑↓ navigate   {key} run   esc close	↑↓ navegar   {key} ejecutar   esc cerrar
 	Version {version}	Versión {version}
+# About window: Contributors and Models tabs
+	About	Acerca de
+	Contributors	Colaboradores
+	Models	Modelos
+	GitHub username	Usuario de GitHub
+	Display name	Nombre visible
+	Real name	Nombre real
+	First contribution	Primera contribución
+	Last contribution	Última contribución
+	Merged PRs	PR fusionadas
+	Commits	Commits
+	Lines added	Líneas añadidas
+	Lines removed	Líneas eliminadas
+	First merge	Primera fusión
+	Last merge	Última fusión
+	Company	Empresa
+	Model	Modelo
+	Version	Versión
+	% of AI-assisted	% de los asistidos por IA
+	% of all commits	% de todos los commits
+	PRs	PR
+	Pull requests	Solicitudes de cambios
+	No contributor data in this build.	Esta compilación no incluye datos de colaboradores.
+	No model data in this build.	Esta compilación no incluye datos de modelos.
+	Select a contributor to list their pull requests and commits.	Selecciona un colaborador para ver sus solicitudes de cambios y commits.
+	From the Co-Authored-By trailers of commits on the main branch.	Según los avisos Co-Authored-By de los commits de la rama principal.
 	New Document	Documento nuevo
 	Error	Error
 	Command	Comando

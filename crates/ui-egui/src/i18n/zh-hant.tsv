@@ -1444,6 +1444,32 @@
 	{name} options	{name} 選項
 	↑↓ navigate   {key} run   esc close	↑↓ 瀏覽   {key} 執行   esc 關閉
 	Version {version}	版本 {version}
+# About window: Contributors and Models tabs
+	About	關於
+	Contributors	貢獻者
+	Models	模型
+	GitHub username	GitHub 使用者名稱
+	Display name	顯示名稱
+	Real name	真實姓名
+	First contribution	首次貢獻
+	Last contribution	最近貢獻
+	Merged PRs	已合併的 PR
+	Commits	提交
+	Lines added	新增行數
+	Lines removed	刪除行數
+	First merge	首次合併
+	Last merge	最近合併
+	Company	公司
+	Model	模型名稱
+	Version	版本
+	% of AI-assisted	佔 AI 輔助提交的比例
+	% of all commits	佔全部提交的比例
+	PRs	PR
+	Pull requests	拉取請求
+	No contributor data in this build.	此版本沒有貢獻者資料。
+	No model data in this build.	此版本沒有模型資料。
+	Select a contributor to list their pull requests and commits.	選取一位貢獻者以列出其拉取請求與提交。
+	From the Co-Authored-By trailers of commits on the main branch.	依 main 分支提交的 Co-Authored-By 標記統計。
 	New Document	新增文件
 	Error	錯誤
 	Command	指令

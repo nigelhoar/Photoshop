@@ -1443,6 +1443,32 @@
 	{name} options	{name} のオプション
 	↑↓ navigate   {key} run   esc close	↑↓ 移動   {key} 実行   esc 閉じる
 	Version {version}	バージョン {version}
+# About window: Contributors and Models tabs
+	About	概要
+	Contributors	コントリビューター
+	Models	モデル
+	GitHub username	GitHub ユーザー名
+	Display name	表示名
+	Real name	本名
+	First contribution	最初の貢献
+	Last contribution	最後の貢献
+	Merged PRs	マージ済み PR
+	Commits	コミット
+	Lines added	追加行数
+	Lines removed	削除行数
+	First merge	最初のマージ
+	Last merge	最後のマージ
+	Company	企業
+	Model	モデル名
+	Version	バージョン
+	% of AI-assisted	AI 支援コミット中の割合
+	% of all commits	全コミット中の割合
+	PRs	PR
+	Pull requests	プルリクエスト
+	No contributor data in this build.	このビルドにはコントリビューターのデータがありません。
+	No model data in this build.	このビルドにはモデルのデータがありません。
+	Select a contributor to list their pull requests and commits.	コントリビューターを選択すると、そのプルリクエストとコミットを一覧表示します。
+	From the Co-Authored-By trailers of commits on the main branch.	main ブランチのコミットの Co-Authored-By トレーラーから集計しています。
 	New Document	新規ドキュメント
 	Error	エラー
 	Command	コマンド

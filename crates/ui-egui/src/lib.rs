@@ -14,6 +14,7 @@ macro_rules! tl {
     };
 }
 
+pub mod about_ui;
 pub mod actions;
 pub mod adjust_dialog;
 pub mod adjust_editors;
@@ -37,6 +38,10 @@ pub mod color_picker_ui;
 pub mod color_range_ui;
 pub mod comps_ui;
 pub mod control;
+pub mod credits;
+// The parsers are used by build.rs, the xtask and the tests; the app only uses the row types.
+#[cfg_attr(not(test), allow(dead_code))]
+mod credits_data;
 pub mod crop_ui;
 pub mod dialogs;
 pub mod discard_ui;

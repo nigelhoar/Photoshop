@@ -131,3 +131,7 @@ Then append a terse entry to `log/devlog.md` (what landed, numbers, what's still
 nothing is silently dropped from `.pcraft` saves. When you add a doc field, add it to
 `crates/format/src/manifest.rs` and `convert.rs` with `#[serde(default)]` so older files still load.
 If the field has a PSD equivalent, map it in `crates/io` too, and keep unknown PSD blocks verbatim.
+
+## 9. Credits: the About window
+
+Help ▸ About PhotoCraft has **Contributors** and **Models** tabs, compiled in by `crates/ui-egui/build.rs` from `contributors/*.tsv` (standard: `../craftrules/standards/contributors.md`). Run `cargo xtask contributors` before a release (it needs `gh` and is the only networked step) and commit the regenerated `commits.tsv` / `prs.tsv`; add new AI models it reports as unmapped to `contributors/models.tsv`. **Privacy:** only GitHub logins are recorded. Never collect display names, real names or emails (not from GitHub profiles, not from git author fields) unless the person consented in `contributors/people.tsv` (today only @echelon, the owner); the xtask never writes `people.tsv` or `models.tsv`.

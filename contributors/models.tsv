@@ -1,0 +1,5 @@
+id	company	model	version	trailer
+anthropic/claude-opus/4.8	Anthropic	Claude Opus	4.8	Claude Opus 4.8
+anthropic/claude-opus/5.5	Anthropic	Claude Opus	5.5	Claude Opus 5.5
+anthropic/claude-opus/5.5	Anthropic	Claude Opus	5.5	Claude Opus 5.5 (1M context)
+anthropic/claude-sonnet/5.5	Anthropic	Claude Sonnet	5.5	Claude Sonnet 5.5
