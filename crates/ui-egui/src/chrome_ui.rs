@@ -2,7 +2,6 @@
 //! Home button at the start of the options bar.
 
 use egui::{RichText, Sense, Stroke, vec2};
-use photocraft_cms::Profile;
 use photocraft_doc::{Document, LayerContent};
 use serde::{Deserialize, Serialize};
 
@@ -103,19 +102,19 @@ pub fn status_info_text(doc: &Document, key: &str, tool: &str, profile: &str) ->
 
 fn profile_name(doc: &Document) -> String {
     let mode = crate::canvas::mode_label(doc);
-    let Some(bytes) = doc.icc_profile.as_deref() else {
+    let Some(bytes) = doc.icc_profile.as_ref() else {
         return crate::i18n::fmt(tl!("Untagged {mode}"), &[("mode", tl!(mode))]);
     };
-    let Ok(profile) = Profile::parse(bytes) else {
-        return format!("Invalid {mode} profile");
+    let Ok(profile) = photocraft_engine::color_cmds::profile_from_bytes(bytes) else {
+        return crate::i18n::fmt(tl!("Invalid {mode} profile"), &[("mode", tl!(mode))]);
     };
     if profile.color_space != photocraft_engine::color_cmds::mode_space(doc.mode) {
-        return format!("Invalid {mode} profile");
+        return crate::i18n::fmt(tl!("Invalid {mode} profile"), &[("mode", tl!(mode))]);
     }
     let name: String = profile.description.chars().filter(|c| !c.is_control()).take(128).collect();
     let name = name.trim();
     if name.is_empty() {
-        return format!("Unnamed {mode} profile");
+        return crate::i18n::fmt(tl!("Unnamed {mode} profile"), &[("mode", tl!(mode))]);
     }
     name.to_owned()
 }
@@ -236,7 +235,7 @@ mod tests {
     #[test]
     fn status_profile_describes_rgb_gray_and_custom_profiles_without_mutating_the_document() {
         let mut rgb = doc();
-        rgb.icc_profile = Some(photocraft_cms::Builtin::Srgb.profile().to_bytes());
+        rgb.icc_profile = Some(photocraft_engine::color_cmds::working_profile(rgb.mode).to_bytes());
         let before = rgb.icc_profile.clone();
         assert_eq!(profile_name(&rgb), "sRGB IEC61966-2.1");
         assert_eq!(status_info_text(&rgb, "profile", "", &profile_name(&rgb)), "sRGB IEC61966-2.1 (8bpc)");
@@ -244,10 +243,10 @@ mod tests {
 
         let mut gray = doc();
         gray.mode = photocraft_doc::ColorMode::Grayscale;
-        gray.icc_profile = Some(photocraft_cms::Builtin::SGray.profile().to_bytes());
+        gray.icc_profile = Some(photocraft_engine::color_cmds::working_profile(gray.mode).to_bytes());
         assert_eq!(profile_name(&gray), "sGray (sRGB tone curve, Photocraft)");
 
-        let mut custom = photocraft_cms::synth::coated_cmyk();
+        let mut custom = (*photocraft_engine::color_cmds::working_profile(photocraft_doc::ColorMode::Cmyk)).clone();
         custom.description = "PhotoCraft Studio CMYK".into();
         let mut custom_doc = doc();
         custom_doc.mode = photocraft_doc::ColorMode::Cmyk;
@@ -261,7 +260,7 @@ mod tests {
         malformed.icc_profile = Some(std::sync::Arc::new(vec![1, 2, 3]));
         assert_eq!(profile_name(&malformed), "Invalid RGB profile");
 
-        let mut unnamed_profile = photocraft_cms::synth::coated_cmyk();
+        let mut unnamed_profile = (*photocraft_engine::color_cmds::working_profile(photocraft_doc::ColorMode::Cmyk)).clone();
         unnamed_profile.description.clear();
         let mut unnamed = doc();
         unnamed.mode = photocraft_doc::ColorMode::Cmyk;
@@ -270,7 +269,7 @@ mod tests {
 
         let mut mismatched = doc();
         mismatched.mode = photocraft_doc::ColorMode::Grayscale;
-        mismatched.icc_profile = Some(photocraft_cms::Builtin::Srgb.profile().to_bytes());
+        mismatched.icc_profile = Some(photocraft_engine::color_cmds::working_profile(photocraft_doc::ColorMode::Rgb).to_bytes());
         assert_eq!(profile_name(&mismatched), "Invalid Gray profile");
     }
 
