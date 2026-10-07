@@ -6,7 +6,7 @@
 //! Methods:
 //! - `engine.execute {command, params}`: run any engine or UI command by id
 //! - `engine.commands`: list commands with enablement
-//! - `ui.inspect`: full UI state (tool, panels, views, dialogs, windows, menu tree, window size)
+//! - `ui.inspect`: UI state (tool, panels, views, dialogs, windows, window size); menu entries are returned by `ui.menu.list`
 //! - `ui.set {tool?, panels?, dock?, dockTabs?, dockWidth?, maskTarget?, vectorMaskTarget?, selectionMode?, zoom?, center?, fit?, theme?, brushSection?, brushTab?, brushesView?, brushSize?}`:
 //!   change UI state; any other field is an error ([`UI_SET_FIELDS`])
 //! - `ui.menu.invoke {id}` / `ui.menu.list`: activate a menu item by id; list the menu tree

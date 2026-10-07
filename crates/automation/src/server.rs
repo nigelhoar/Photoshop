@@ -547,7 +547,7 @@ impl PhotocraftMcp {
 
     // ----- live-GUI tools (bridge mode) -----
 
-    #[tool(description = "Bridge mode: full UI state of the live app (tool, panels, views, dialogs, menu tree).")]
+    #[tool(description = "Bridge mode: UI state of the live app (tool, panels, views, dialogs, windows). Menu entries are returned by `ui.menu.list`.")]
     async fn ui_inspect(&self) -> Result<CallToolResult, McpError> {
         match self.bridge_client() {
             Some(b) => to_result(b.call("ui.inspect", json!({})).await),
