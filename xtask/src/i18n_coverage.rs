@@ -20,15 +20,7 @@ pub fn run(root: &Path) -> Result<(), String> {
     let registry = fs::read_to_string(&registry_path).map_err(|e| format!("{}: {e}", registry_path.display()))?;
     let languages = registered_languages(&registry)?;
 
-    let english_path = root.join("xtask/i18n-english-keys.tsv");
-    let english_text = fs::read_to_string(&english_path).map_err(|e| format!("{}: {e}", english_path.display()))?;
-    let english_keys = parse_key_inventory(&english_path, &english_text)?;
-    let sources = source_files(root)?;
-    let literal_keys = tl_keys(&sources);
-    let missing_literals: Vec<_> = literal_keys.difference(&english_keys).map(|key| key.source.clone()).collect();
-    if !missing_literals.is_empty() {
-        return Err(format!("{}: English-key inventory is missing UI tl! keys: {missing_literals:?}", english_path.display()));
-    }
+    let english_keys = source_keys(root)?;
     let mut catalog_texts = BTreeMap::new();
     for language in &languages {
         if let Some(path) = &language.catalog {
@@ -41,7 +33,7 @@ pub fn run(root: &Path) -> Result<(), String> {
     for language in &languages {
         let entries = if language.catalog.is_some() {
             let (full_path, text) = catalog_texts.get(&language.code).ok_or_else(|| format!("missing source for registered language `{}`", language.code))?;
-            parse_catalog(full_path, text, &english_keys)?
+            parse_catalog(full_path, text)?
         } else {
             BTreeSet::new()
         };
@@ -49,14 +41,30 @@ pub fn run(root: &Path) -> Result<(), String> {
     }
 
     if english_keys.is_empty() {
-        return Err("no English UI translation keys were found".into());
+        return Err("no source-derived English UI translation keys were found".into());
     }
     print!("{}", format_report(&languages, &english_keys, &translations));
     Ok(())
 }
 
+fn source_keys(root: &Path) -> Result<BTreeSet<Key>, String> {
+    let ui_sources = source_files(&root.join("crates/ui-egui/src"))?;
+    let engine_sources = source_files(&root.join("crates/engine/src"))?;
+    let mut keys = tl_keys(&ui_sources);
+    keys.extend(plural_keys(&ui_sources));
+
+    let catalog_path = root.join("crates/ui-egui/src/menu_catalog.rs");
+    let catalog = fs::read_to_string(&catalog_path).map_err(|e| format!("{}: {e}", catalog_path.display()))?;
+    keys.extend(menu_catalog_keys(&catalog));
+
+    let ui_commands = ui_sources.iter().find(|(path, _)| path.ends_with("menus.rs")).ok_or_else(|| "could not find crates/ui-egui/src/menus.rs".to_string())?;
+    keys.extend(ui_command_keys(&ui_commands.1));
+    keys.extend(engine_command_labels(&engine_sources));
+    Ok(keys)
+}
+
 fn format_report(languages: &[Language], english_keys: &BTreeSet<Key>, translations: &BTreeMap<String, BTreeSet<Key>>) -> String {
-    let mut report = String::from("UI translation coverage (catalogued English keys / English keys)\n");
+    let mut report = String::from("UI translation coverage (translated source keys / source keys)\n");
     report.push_str(&format!("{:<12} {:>12} {:>9}\n", "language", "translated", "coverage"));
     for language in languages {
         let translated =
@@ -114,30 +122,9 @@ fn quoted_field(block: &str, field: &str) -> Option<String> {
     Some(rest.get(..end)?.to_string())
 }
 
-fn parse_key_inventory(path: &Path, text: &str) -> Result<BTreeSet<Key>, String> {
-    let mut keys = BTreeSet::new();
-    for (index, line) in text.lines().enumerate() {
-        if line.trim().is_empty() || line.starts_with('#') {
-            continue;
-        }
-        let mut columns = line.split('\t');
-        let key = match (columns.next(), columns.next(), columns.next()) {
-            (Some(context), Some(source), None) if !source.is_empty() => Key { context: unescape_tsv(context), source: unescape_tsv(source) },
-            _ => return Err(format!("{}:{line_no}: expected `context<TAB>source`", path.display(), line_no = index + 1)),
-        };
-        if !keys.insert(key.clone()) {
-            return Err(format!("{}:{line_no}: duplicate English key {:?}", path.display(), key, line_no = index + 1));
-        }
-    }
-    if keys.is_empty() {
-        return Err(format!("{}: English-key inventory is empty", path.display()));
-    }
-    Ok(keys)
-}
-
 fn source_files(root: &Path) -> Result<Vec<(PathBuf, String)>, String> {
     let mut files = Vec::new();
-    let mut stack = vec![root.join("crates/ui-egui/src")];
+    let mut stack = vec![root.to_path_buf()];
     while let Some(path) = stack.pop() {
         let entries = fs::read_dir(&path).map_err(|e| format!("{}: {e}", path.display()))?;
         for entry in entries {
@@ -146,6 +133,10 @@ fn source_files(root: &Path) -> Result<Vec<(PathBuf, String)>, String> {
             if path.is_dir() {
                 stack.push(path);
             } else if path.extension().and_then(|ext| ext.to_str()) == Some("rs") {
+                let stem = path.file_stem().and_then(|name| name.to_str()).unwrap_or_default();
+                if stem == "tests" || stem.ends_with("_tests") {
+                    continue;
+                }
                 let text = fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
                 files.push((path, text));
             }
@@ -181,6 +172,212 @@ fn tl_keys(sources: &[(PathBuf, String)]) -> BTreeSet<Key> {
     keys
 }
 
+fn plural_keys(sources: &[(PathBuf, String)]) -> BTreeSet<Key> {
+    let mut keys = BTreeSet::new();
+    for (path, source) in sources {
+        if path.ends_with("i18n/mod.rs") {
+            continue;
+        }
+        let code = source.split("#[cfg(test)]\nmod ").next().unwrap_or(source);
+        let mut rest = code;
+        while let Some(at) = rest.find("trn(") {
+            rest = rest.get(at + 4..).unwrap_or("");
+            let Some(end) = call_end(rest) else { break };
+            let args = rest.get(..end).unwrap_or("");
+            let forms = quoted_strings(args);
+            if forms.len() >= 2 {
+                keys.insert(Key { context: "@plural".into(), source: format!("{}|{}", forms[0], forms[1]) });
+            }
+            rest = rest.get(end + 1..).unwrap_or("");
+        }
+    }
+    keys
+}
+
+fn menu_catalog_keys(source: &str) -> BTreeSet<Key> {
+    let mut keys = BTreeSet::new();
+    for line in source.lines().map(str::trim) {
+        let Some(entry) = line.strip_prefix("(&[") else { continue };
+        let Some((path, item)) = entry.split_once("],") else { continue };
+        for segment in quoted_strings(path) {
+            keys.insert(Key { context: String::new(), source: segment });
+        }
+        if let Some(label) = quoted_strings(item).first().filter(|label| label.as_str() != "---") {
+            keys.insert(Key { context: String::new(), source: label.clone() });
+        }
+    }
+    keys
+}
+
+fn ui_command_keys(source: &str) -> BTreeSet<Key> {
+    let mut keys = BTreeSet::new();
+    for line in source.lines().map(str::trim) {
+        if !line.starts_with("(\"") {
+            continue;
+        }
+        let Some((before_path, path_and_rest)) = line.split_once("&[") else { continue };
+        let Some((path, _)) = path_and_rest.split_once(']') else { continue };
+        if let Some(label) = quoted_strings(before_path).get(1) {
+            keys.insert(Key { context: String::new(), source: label.clone() });
+        }
+        keys.extend(quoted_strings(path).into_iter().map(|source| Key { context: String::new(), source }));
+    }
+    keys
+}
+
+fn engine_command_labels(sources: &[(PathBuf, String)]) -> BTreeSet<Key> {
+    let mut keys = BTreeSet::new();
+    let mut command_macros = HashSet::new();
+    for (_, source) in sources {
+        let mut rest = source.as_str();
+        while let Some(at) = rest.find("macro_rules!") {
+            rest = rest.get(at + "macro_rules!".len()..).unwrap_or("");
+            let name = rest.trim_start().split(|c: char| !c.is_ascii_alphanumeric() && c != '_').next().unwrap_or("");
+            if name.is_empty() {
+                continue;
+            }
+            let next_definition = rest.find("macro_rules!").unwrap_or(rest.len());
+            let definition = rest.get(..next_definition).unwrap_or(rest);
+            if definition.contains("CommandSpec {") && definition.contains("label:") {
+                command_macros.insert(name.to_string());
+            }
+        }
+    }
+    for (_, source) in sources {
+        let code = source.split("#[cfg(test)]\nmod ").next().unwrap_or(source);
+        let mut rest = code;
+        while let Some(at) = rest.find("CommandSpec {") {
+            rest = rest.get(at + "CommandSpec {".len()..).unwrap_or("");
+            let Some(end) = balanced_end(rest, '{', '}') else { break };
+            let Some(body) = rest.get(..end) else { break };
+            let mut fields = split_arguments(body).into_iter();
+            let label_field = fields.find_map(|field| field.trim().strip_prefix("label:").map(str::trim));
+            let menu_field = split_arguments(body).into_iter().find_map(|field| field.trim().strip_prefix("menu:").map(str::trim));
+            if let (Some(label_field), Some(menu_field)) = (label_field, menu_field)
+                && let Some(label) = quoted_strings(label_field).first()
+                && (menu_field.starts_with("&[") || menu_field.starts_with('['))
+                && let Some(path) = menu_field.split_once('[').and_then(|(_, rest)| rest.split_once(']').map(|(path, _)| path))
+                && !path.trim().is_empty()
+            {
+                keys.insert(Key { context: String::new(), source: label.clone() });
+                keys.extend(quoted_strings(path).into_iter().map(|source| Key { context: String::new(), source }));
+            }
+            rest = rest.get(end + 1..).unwrap_or("");
+        }
+        for name in &command_macros {
+            let marker = format!("{name}!(");
+            let mut rest = code;
+            while let Some(at) = rest.find(&marker) {
+                rest = rest.get(at + marker.len()..).unwrap_or("");
+                let Some(end) = call_end(rest) else { break };
+                let Some(args) = rest.get(..end) else { continue };
+                if let Some(label) = menu_command_label(args) {
+                    keys.insert(Key { context: String::new(), source: label });
+                }
+                rest = rest.get(end + 1..).unwrap_or("");
+            }
+        }
+    }
+    keys
+}
+
+fn menu_command_label(args: &str) -> Option<String> {
+    let args = split_arguments(args);
+    let menu = args.get(2)?.trim();
+    if !(menu.starts_with("&[") || menu.starts_with('[')) || quoted_strings(menu).is_empty() {
+        return None;
+    }
+    quoted_strings(args.get(1)?.trim()).first().cloned()
+}
+
+fn split_arguments(args: &str) -> Vec<&str> {
+    let mut out = Vec::new();
+    let mut depth = 0_usize;
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut start = 0;
+    for (index, ch) in args.char_indices() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        match ch {
+            '"' => in_string = true,
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' => depth = depth.saturating_sub(1),
+            ',' if depth == 0 => {
+                if let Some(arg) = args.get(start..index) {
+                    out.push(arg);
+                }
+                start = index + ch.len_utf8();
+            }
+            _ => {}
+        }
+    }
+    if let Some(arg) = args.get(start..) {
+        out.push(arg);
+    }
+    out
+}
+
+fn call_end(source: &str) -> Option<usize> {
+    balanced_end(source, '(', ')')
+}
+
+fn balanced_end(source: &str, open: char, close: char) -> Option<usize> {
+    let mut depth = 1_usize;
+    let mut in_string = false;
+    let mut escaped = false;
+    for (index, ch) in source.char_indices() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+        match ch {
+            '"' => in_string = true,
+            value if value == open => depth += 1,
+            value if value == close => {
+                depth = depth.checked_sub(1)?;
+                if depth == 0 {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn quoted_strings(source: &str) -> Vec<String> {
+    let mut strings = Vec::new();
+    let mut rest = source;
+    while let Some(at) = rest.find('"') {
+        rest = rest.get(at + 1..).unwrap_or("");
+        let bytes = rest.as_bytes();
+        let mut end = 0;
+        while end < bytes.len() && !(bytes[end] == b'"' && (end == 0 || bytes[end - 1] != b'\\')) {
+            end += 1;
+        }
+        if let Some(raw) = rest.get(..end) {
+            strings.push(unescape_rust_string(raw));
+        }
+        rest = rest.get(end.saturating_add(1)..).unwrap_or("");
+    }
+    strings
+}
+
 fn unescape_rust_string(raw: &str) -> String {
     let mut out = String::with_capacity(raw.len());
     let mut chars = raw.chars();
@@ -205,7 +402,7 @@ fn unescape_rust_string(raw: &str) -> String {
     out
 }
 
-fn parse_catalog(path: &Path, text: &str, english_keys: &BTreeSet<Key>) -> Result<BTreeSet<Key>, String> {
+fn parse_catalog(path: &Path, text: &str) -> Result<BTreeSet<Key>, String> {
     let mut keys = BTreeSet::new();
     for (index, line) in text.lines().enumerate() {
         if line.trim().is_empty() || line.starts_with('#') {
@@ -220,9 +417,6 @@ fn parse_catalog(path: &Path, text: &str, english_keys: &BTreeSet<Key>) -> Resul
         };
         if !keys.insert(Key { context: parsed.context.clone(), source: parsed.source.clone() }) {
             return Err(format!("{}:{line_no}: duplicate key {:?} {:?}", path.display(), parsed.context, parsed.source, line_no = index + 1));
-        }
-        if !english_keys.contains(&parsed) {
-            return Err(format!("{}:{line_no}: unknown English key {:?} {:?}", path.display(), parsed.context, parsed.source, line_no = index + 1));
         }
     }
     Ok(keys)
@@ -259,23 +453,15 @@ mod tests {
     }
 
     #[test]
-    fn rejects_unknown_english_keys() {
-        let known = known_keys(&["Open"]);
-        let error = parse_catalog(Path::new("xx.tsv"), "\tTypo\tÜbersetzung\n", &known).err();
-        assert!(error.is_some_and(|message| message.contains("unknown English key")));
+    fn unused_legacy_catalog_keys_do_not_affect_coverage() {
+        let catalog = parse_catalog(Path::new("xx.tsv"), "\tOld key\tÜbersetzung\n");
+        assert_eq!(catalog, Ok(known_keys(&["Old key"])));
     }
 
     #[test]
     fn rejects_duplicate_keys() {
-        let known = known_keys(&["Open"]);
-        let error = parse_catalog(Path::new("xx.tsv"), "\tOpen\tOuvrir\n\tOpen\tOuvert\n", &known).err();
+        let error = parse_catalog(Path::new("xx.tsv"), "\tOpen\tOuvrir\n\tOpen\tOuvert\n").err();
         assert!(error.is_some_and(|message| message.contains("duplicate key")));
-    }
-
-    #[test]
-    fn rejects_duplicate_inventory_keys() {
-        let error = parse_key_inventory(Path::new("english.tsv"), "\tOpen\n\tOpen\n").err();
-        assert!(error.is_some_and(|message| message.contains("duplicate English key")));
     }
 
     #[test]
@@ -295,11 +481,65 @@ mod tests {
         let translations = BTreeMap::from([("fr".to_string(), BTreeSet::from([Key { context: String::new(), source: "Open".into() }]))]);
         assert_eq!(
             format_report(&languages, &english_keys, &translations),
-            "UI translation coverage (catalogued English keys / English keys)\n\
+            "UI translation coverage (translated source keys / source keys)\n\
              language       translated  coverage\n\
              en               2/2        100.00%\n\
              fr               1/2         50.00%\n\
              zh               0/2          0.00%\n"
         );
+    }
+
+    #[test]
+    fn gathers_keys_from_ui_and_engine_sources() {
+        let catalog = menu_catalog_keys(
+            r#"(&["File", "Export"], "Export As…", Some("Cmd+Shift+S"), "file.exportAs"),
+               (&["File"], "---", None, "---"),"#,
+        );
+        assert!(catalog.contains(&Key { context: String::new(), source: "File".into() }));
+        assert!(catalog.contains(&Key { context: String::new(), source: "Export".into() }));
+        assert!(catalog.contains(&Key { context: String::new(), source: "Export As…".into() }));
+        assert!(!catalog.contains(&Key { context: String::new(), source: "---".into() }));
+
+        let ui = ui_command_keys(
+            r#"("view.zoomIn", "Zoom In", &["View"], Some("Cmd+=")),
+               ("view.fit", "Fit", &[], None),"#,
+        );
+        assert!(ui.contains(&Key { context: String::new(), source: "Zoom In".into() }));
+        assert!(ui.contains(&Key { context: String::new(), source: "View".into() }));
+
+        let engine = vec![(
+            PathBuf::from("commands.rs"),
+            r#"
+            macro_rules! spec { ($id:literal, $label:literal, $menu:expr) => { CommandSpec { id: $id, label: $label, menu: $menu } }; }
+            spec!("file.open", "Open", &["File"]);
+            spec!("brush.get", "Get Brush", &[]);
+            CommandSpec { id: "layer.new", label: "New Layer", menu: &["Layer"] }
+        "#
+            .into(),
+        )];
+        let labels = engine_command_labels(&engine);
+        assert!(labels.contains(&Key { context: String::new(), source: "Open".into() }));
+        assert!(labels.contains(&Key { context: String::new(), source: "New Layer".into() }));
+        assert!(labels.contains(&Key { context: String::new(), source: "Layer".into() }));
+        assert!(!labels.contains(&Key { context: String::new(), source: "Get Brush".into() }));
+    }
+
+    #[test]
+    fn plural_keys_come_from_source_calls() {
+        let sources = vec![(PathBuf::from("ui.rs"), r#"trn(lang, count, "{n} layer", "{n} layers");"#.into())];
+        assert!(plural_keys(&sources).contains(&Key { context: "@plural".into(), source: "{n} layer|{n} layers".into() }));
+    }
+
+    #[test]
+    fn source_key_set_is_covered_by_complete_catalogs() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap_or(Path::new("."));
+        let keys = source_keys(root).unwrap_or_default();
+        for (code, path) in [("ja", "ja.tsv"), ("zh-hant", "zh-hant.tsv"), ("es", "es.tsv"), ("ru", "ru.tsv"), ("cs", "cs.tsv")] {
+            let catalog_path = root.join("crates/ui-egui/src/i18n").join(path);
+            let text = fs::read_to_string(&catalog_path).unwrap_or_default();
+            let translations = parse_catalog(&catalog_path, &text).unwrap_or_default();
+            let missing: Vec<_> = keys.difference(&translations).collect();
+            assert!(missing.is_empty(), "{code}: missing source keys: {missing:#?}");
+        }
     }
 }
