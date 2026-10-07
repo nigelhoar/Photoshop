@@ -8,8 +8,6 @@ use serde::{Deserialize, Serialize};
 use crate::PhotocraftApp;
 
 const WAYLAND_FILE_DROP_DISMISSED: &str = "ui.waylandFileDropGuidanceDismissed";
-const WAYLAND_FILE_DROP_TITLE: &str = "Native file drag-and-drop is unavailable";
-
 /// At most this many notices are kept; older ones drop off.
 pub const MAX_NOTICES: usize = 3;
 /// Lines shown per notice before "…and N more".
@@ -24,21 +22,21 @@ pub struct Notice {
     /// An error (warning colour) rather than an informational notice.
     #[serde(default)]
     pub error: bool,
-    /// Persist dismissal in preferences rather than only removing this session's notice.
+    /// Preference key to set when this notice is dismissed.
     #[serde(default)]
-    pub persist_dismissal: bool,
+    pub dismiss_pref: Option<String>,
 }
 
 /// Show a notice (newest last).
-pub fn post(app: &mut PhotocraftApp, title: impl Into<String>, lines: Vec<String>, error: bool) {
+pub fn post(app: &mut PhotocraftApp, title: impl Into<String>, lines: Vec<String>, error: bool, dismiss_pref: Option<&str>) {
     let id = app.ui.alloc_id();
-    app.ui.notices.push(Notice { id, title: title.into(), lines, error, persist_dismissal: false });
+    app.ui.notices.push(Notice { id, title: title.into(), lines, error, dismiss_pref: dismiss_pref.map(str::to_owned) });
     cap_notices(app);
 }
 
 fn cap_notices(app: &mut PhotocraftApp) {
     while app.ui.notices.len() > MAX_NOTICES {
-        let oldest_temporary = app.ui.notices.iter().position(|notice| !notice.persist_dismissal).unwrap_or(0);
+        let oldest_temporary = app.ui.notices.iter().position(|notice| notice.dismiss_pref.is_none()).unwrap_or(0);
         app.ui.notices.remove(oldest_temporary);
     }
 }
@@ -47,29 +45,27 @@ fn cap_notices(app: &mut PhotocraftApp) {
 pub fn wayland_file_drop_guidance(app: &mut PhotocraftApp) {
     if !app.services.is_wayland
         || app.session.prefs().dialogs.get(WAYLAND_FILE_DROP_DISMISSED).and_then(serde_json::Value::as_bool) == Some(true)
-        || app.ui.notices.iter().any(|notice| notice.persist_dismissal)
+        || app.ui.notices.iter().any(|notice| notice.dismiss_pref.as_deref() == Some(WAYLAND_FILE_DROP_DISMISSED))
     {
         return;
     }
-    let id = app.ui.alloc_id();
-    app.ui.notices.push(Notice {
-        id,
-        title: WAYLAND_FILE_DROP_TITLE.into(),
-        lines: vec![
-            "Native file drag-and-drop is not supported on Wayland yet. Use File > Open, copy an image file in your file manager and press Ctrl+V, or run PhotoCraft under XWayland.".into(),
+    post(
+        app,
+        tl!("Native file drag-and-drop is unavailable"),
+        vec![
+            tl!("Native file drag-and-drop is not supported on Wayland yet. Use File › Open, or run PhotoCraft under XWayland with `WAYLAND_DISPLAY= photocraft`.").into(),
         ],
-        error: false,
-        persist_dismissal: true,
-    });
-    cap_notices(app);
+        false,
+        Some(WAYLAND_FILE_DROP_DISMISSED),
+    );
 }
 
 fn dismiss(app: &mut PhotocraftApp, id: u64) {
-    let persist = app.ui.notices.iter().any(|notice| notice.id == id && notice.persist_dismissal);
+    let dismiss_pref = app.ui.notices.iter().find(|notice| notice.id == id).and_then(|notice| notice.dismiss_pref.clone());
     app.ui.notices.retain(|notice| notice.id != id);
-    if persist {
+    if let Some(key) = dismiss_pref {
         app.session.prefs.edit(|prefs| {
-            prefs.dialogs.insert(WAYLAND_FILE_DROP_DISMISSED.into(), serde_json::Value::Bool(true));
+            prefs.dialogs.insert(key, serde_json::Value::Bool(true));
         });
     }
 }
@@ -81,7 +77,7 @@ pub fn io_warnings(app: &mut PhotocraftApp, what: &str, warnings: &[String]) {
     let n = warnings.len();
     app.ui.status = if n == 1 { format!("{what}: {first}") } else { format!("{what} with {n} warnings: {first} …") };
     app.ui.status_error = true;
-    post(app, format!("{what} with {n} warning{}", if n == 1 { "" } else { "s" }), warnings.to_vec(), false);
+    post(app, format!("{what} with {n} warning{}", if n == 1 { "" } else { "s" }), warnings.to_vec(), false, None);
 }
 
 /// Report a failed file operation: the status bar shows it as an error and a notice keeps it on
@@ -89,7 +85,7 @@ pub fn io_warnings(app: &mut PhotocraftApp, what: &str, warnings: &[String]) {
 pub fn error(app: &mut PhotocraftApp, message: String) {
     app.ui.status = message.clone();
     app.ui.status_error = true;
-    post(app, message, Vec::new(), true);
+    post(app, message, Vec::new(), true, None);
 }
 
 /// Draw the notices; each has a close button.
@@ -150,17 +146,19 @@ mod tests {
     fn wayland_guidance_is_only_shown_in_wayland_sessions() {
         let mut app = PhotocraftApp::new(Session::new(), Services { is_wayland: true, ..Default::default() });
         assert_eq!(app.ui.notices.len(), 1);
-        assert_eq!(app.ui.notices[0].title, WAYLAND_FILE_DROP_TITLE);
+        assert_eq!(app.ui.notices[0].title, "Native file drag-and-drop is unavailable");
         let guidance = app.ui.notices[0].lines.join(" ");
         assert!(guidance.contains("not supported on Wayland yet"));
-        assert!(guidance.contains("File > Open"));
-        assert!(guidance.contains("Ctrl+V"));
+        assert!(guidance.contains("File › Open"));
+        assert!(!guidance.contains("Ctrl+V"));
         assert!(guidance.contains("XWayland"));
+        assert!(guidance.contains("WAYLAND_DISPLAY= photocraft"));
+        assert_eq!(app.ui.notices[0].dismiss_pref.as_deref(), Some(WAYLAND_FILE_DROP_DISMISSED));
         for i in 0..MAX_NOTICES {
-            post(&mut app, format!("Transient {i}"), Vec::new(), false);
+            post(&mut app, format!("Transient {i}"), Vec::new(), false, None);
         }
         assert_eq!(app.ui.notices.len(), MAX_NOTICES);
-        assert!(app.ui.notices.iter().any(|notice| notice.persist_dismissal));
+        assert!(app.ui.notices.iter().any(|notice| notice.dismiss_pref.is_some()));
 
         let app = PhotocraftApp::new(Session::new(), Services::default());
         assert!(app.ui.notices.is_empty());
@@ -189,5 +187,14 @@ mod tests {
             Services { is_wayland: true, load_prefs: Some(Box::new(move || saved.lock().unwrap_or_else(|e| e.into_inner()).clone())), ..Default::default() };
         let app = PhotocraftApp::new(Session::new(), services);
         assert!(app.ui.notices.is_empty());
+    }
+
+    #[test]
+    fn dismissing_a_notice_writes_its_own_preference_key() {
+        let mut app = PhotocraftApp::new(Session::new(), Services::default());
+        post(&mut app, "Dismissible", Vec::new(), false, Some("ui.testNoticeDismissed"));
+        let id = app.ui.notices[0].id;
+        dismiss(&mut app, id);
+        assert_eq!(app.session.prefs().dialogs.get("ui.testNoticeDismissed").and_then(serde_json::Value::as_bool), Some(true));
     }
 }
