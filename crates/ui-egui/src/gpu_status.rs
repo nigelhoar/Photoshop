@@ -59,7 +59,7 @@ pub fn fall_back(app: &mut PhotocraftApp, fault: &photocraft_gpu::Fault) {
         lines.push(detail.to_string());
     }
     lines.push("Your documents are unchanged. Save your work; the GPU is used again after a restart.".into());
-    crate::notices::post(app, title, lines, true);
+    crate::notices::post(app, title, lines, true, None);
     app.ui.status = title.to_string();
     app.ui.status_error = true;
 }
