@@ -234,7 +234,7 @@ fn main() -> eframe::Result {
             app.open_paths(&files);
             // Portable marker found but its data folder isn't writable (#228): say where settings went.
             if let Some(w) = &app_dirs::current().warning {
-                photocraft_ui_egui::notices::post(&mut app, "Portable mode is off", vec![w.clone()], false);
+                photocraft_ui_egui::notices::post(&mut app, "Portable mode is off", vec![w.clone()], false, None);
             }
             Ok(Box::new(app))
         }),
