@@ -28,6 +28,7 @@ pub enum Tool {
     Zoom,
     SpotHealing,
     Healing,
+    Patch,
     CloneStamp,
     HistoryBrush,
     Blur,
@@ -51,7 +52,7 @@ pub enum Tool {
 }
 
 impl Tool {
-    pub const ALL: [Tool; 43] = [
+    pub const ALL: [Tool; 44] = [
         Tool::Move,
         Tool::RectMarquee,
         Tool::EllipseMarquee,
@@ -75,6 +76,7 @@ impl Tool {
         Tool::Zoom,
         Tool::SpotHealing,
         Tool::Healing,
+        Tool::Patch,
         Tool::CloneStamp,
         Tool::HistoryBrush,
         Tool::Blur,
@@ -124,6 +126,7 @@ impl Tool {
             Tool::Zoom => "Zoom Tool",
             Tool::SpotHealing => "Spot Healing Brush Tool",
             Tool::Healing => "Healing Brush Tool",
+            Tool::Patch => "Patch Tool",
             Tool::CloneStamp => "Clone Stamp Tool",
             Tool::HistoryBrush => "History Brush Tool",
             Tool::Blur => "Blur Tool",
@@ -179,7 +182,7 @@ impl Tool {
             Tool::Type => 'T',
             Tool::Hand => 'H',
             Tool::Zoom => 'Z',
-            Tool::SpotHealing | Tool::Healing => 'J',
+            Tool::SpotHealing | Tool::Healing | Tool::Patch => 'J',
             Tool::CloneStamp => 'S',
             Tool::HistoryBrush => 'Y',
             Tool::Blur | Tool::Sharpen | Tool::Smudge => '\0',
@@ -334,6 +337,8 @@ pub struct ToolOptions {
     pub clone_sample: String,
     /// Spot Healing: contentAware | createTexture | proximityMatch
     pub spot_type: String,
+    /// Patch: source (repair the selection) | destination (repair where it is dragged).
+    pub patch_mode: String,
     /// Dodge/Burn: shadows | midtones | highlights, exposure %, protect tones.
     pub tone_range: String,
     pub exposure: f32,
@@ -432,6 +437,7 @@ impl Default for ToolOptions {
             clone_aligned: true,
             clone_sample: "current".into(),
             spot_type: "contentAware".into(),
+            patch_mode: "source".into(),
             tone_range: "midtones".into(),
             exposure: 50.0,
             protect_tones: true,
