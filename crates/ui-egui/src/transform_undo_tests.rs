@@ -1,5 +1,5 @@
 //! Free Transform through the real canvas: Undo and Redo step through the box's own changes (each
-//! drag one step) and never reach the document under the open box, as in Photoshop; and the
+//! drag one step) and never reach the document under the open box; and the
 //! handles have a generous grab radius, so a press just off a corner scales instead of rotating.
 
 use egui::{Key, Modifiers, PointerButton, Pos2, vec2};

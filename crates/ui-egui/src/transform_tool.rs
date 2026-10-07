@@ -33,8 +33,8 @@ pub struct TransformPreview {
     steps: Steps,
 }
 
-/// Grab radius of the box's handles, in screen points. Generous, like Photoshop's, so a corner is
-/// easy to catch; just beyond it, outside the box, a drag rotates.
+/// Grab radius of the box's handles, in screen points. Generous, so a corner is easy to catch;
+/// just beyond it, outside the box, a drag rotates.
 pub const HANDLE_PX: f64 = 12.0;
 
 /// [`HANDLE_PX`] in document pixels at the current zoom.
@@ -61,7 +61,7 @@ impl Step {
     }
 }
 
-/// The session's own history, as in Photoshop: inside Free Transform, Undo steps back through the
+/// The session's own history: inside Free Transform, Undo steps back through the
 /// handle drags, nudges and option edits rather than the document's history.
 #[derive(Default)]
 struct Steps {
