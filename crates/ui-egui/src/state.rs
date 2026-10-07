@@ -3,6 +3,47 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Shared selection and capture for a point curve; document parameters remain with the host.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct PointCurveState {
+    pub selected: Option<usize>,
+    /// Captured point (None while removed outside), grab offset, and re-entry eligibility.
+    pub drag: Option<PointCurveDrag>,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct PointCurveDrag {
+    pub index: Option<usize>,
+    pub offset: [f32; 2],
+    pub removed: bool,
+}
+
+/// Curves editor memory (egui temp data): the edited channel and the point gesture.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct CurvesEditorState {
+    pub channel: usize,
+    pub gesture: PointCurveState,
+}
+
+/// Camera Raw scope preferences are view state, never filter parameters or document history.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct CameraRawScopeState {
+    pub shadows: bool,
+    pub highlights: bool,
+    pub lab: bool,
+    pub sampler_tool: bool,
+    pub samplers: Vec<[f32; 2]>,
+    pub vectorscope: bool,
+    pub selected_region: bool,
+    pub red_right: bool,
+    pub hide_skin_line: bool,
+    pub floating: bool,
+    pub floating_rect: Option<[f32; 4]>,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Tool {
     Move,
@@ -656,6 +697,8 @@ pub struct UiState {
     /// Status bar info field, Home screen (see `chrome_ui`).
     #[serde(default)]
     pub chrome: crate::chrome_ui::ChromeState,
+    #[serde(default)]
+    pub camera_raw_scope: CameraRawScopeState,
 }
 
 impl Default for UiState {
@@ -707,6 +750,7 @@ impl Default for UiState {
             status_error: false,
             notices: Vec::new(),
             chrome: Default::default(),
+            camera_raw_scope: Default::default(),
         }
     }
 }
