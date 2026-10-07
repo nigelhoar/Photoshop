@@ -2005,6 +2005,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "heic-rs"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "adf9dde634bb6d5b718bacd01bef80192f2334306b2f785519a0136cca7b9618"
+dependencies = [
+ "rayon",
+]
+
+[[package]]
 name = "hermit-abi"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3473,6 +3482,7 @@ dependencies = [
  "exr",
  "flate2",
  "half",
+ "heic-rs",
  "image",
  "image-webp",
  "jpeg-encoder",

@@ -60,9 +60,20 @@ Artwork shown in the screenshots (all public domain, via Wikimedia Commons; deta
 | `photocraft-type.jpg` | *Among the Sierra Nevada, California*, Albert Bierstadt, 1868 | [Commons](https://commons.wikimedia.org/wiki/File:Albert_Bierstadt_-_Among_the_Sierra_Nevada,_California_-_Google_Art_Project.jpg) |
 | `photocraft-export-light.jpg` | *The Kiss*, Gustav Klimt, 1907–1908 | [Commons](https://commons.wikimedia.org/wiki/File:Gustav_Klimt_016.jpg) |
 
+## Committed test fixtures (not shipped)
+
+A few tiny HEIC files are committed because no other oracle for HEIF decoding exists in Rust:
+each `.ref.png` is Apple's own decode of the `.heic` beside it, and each `.src.png` the image the
+`.heic` was encoded from.
+
+| Path | Title | Author | Source | License |
+|---|---|---|---|---|
+| `crates/codecs/tests/heif/rgba-10bit-29x100.heic`, `rgba-10bit-29x100.src.png` (18 KB) | pillow-heif fixtures `RGBA_10__29x100.heif` and its source `RGBA_16__29x100.png`: a synthetic RGBA gradient, 10-bit HEIF with an alpha plane | Pillow-Heif contributors | [pillow-heif `tests/images`](https://github.com/bigcat88/pillow_heif/tree/master/tests/images) (`heif/`, `non_heif/`) | BSD-3-Clause, [`LICENSE-BSD-pillow-heif.txt`](crates/codecs/tests/heif/LICENSE-BSD-pillow-heif.txt) |
+| `crates/codecs/tests/heif/` other `*.heic`, `*.ref.png` (7 files, 85 KB) | heic-rs fixtures: checkerboards, RGB strips and a grid-tiled photo with EXIF and XMP, all synthetic (generated pixels, encoded and decoded by macOS `sips`) | Thomas Braun (heic-rs) | [heic-rs `tests/fixtures`](https://github.com/tbraun96/heic-rs/tree/main/tests/fixtures) | MIT OR Apache-2.0, [`LICENSE-MIT-heic-rs.txt`](crates/codecs/tests/heif/LICENSE-MIT-heic-rs.txt), [`LICENSE-APACHE-heic-rs.txt`](crates/codecs/tests/heif/LICENSE-APACHE-heic-rs.txt) |
+
 ## Test data (not committed, not shipped)
 
-`corpus/` is gitignored and no test fixtures are committed to the repository.
+`corpus/` is gitignored and, apart from the fixtures above, no test files are committed to the repository.
 `cargo xtask corpus --all` fetches every corpus at the pinned commits in `xtask/src/corpus_pins.rs`
 and verifies each file against the sha256 lists in `xtask/*.sha256`, with the upstream licence
 next to the files:

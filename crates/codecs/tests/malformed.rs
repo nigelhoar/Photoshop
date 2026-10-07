@@ -20,6 +20,9 @@ fn samples() -> Vec<(Format, Vec<u8>)> {
             v.push((f, encode(&img, f, &EncodeOptions::default()).unwrap()));
         }
     }
+    // Read-only formats: Apple-encoded HEIC, a single picture and a grid of tiles.
+    v.push((Format::Heif, include_bytes!("heif/rgb-strips-96.heic").to_vec()));
+    v.push((Format::Heif, include_bytes!("heif/checker-1024.heic").to_vec()));
     // Extra variants: interlaced PNG, ASCII PNM, CMYK JPEG.
     let img = synth(19, 13, ChannelLayout::Rgb, SampleType::U8, 1, 0.3);
     v.push((Format::Png, encode(&img, Format::Png, &EncodeOptions { png_interlaced: true, ..Default::default() }).unwrap()));
@@ -171,10 +174,11 @@ proptest! {
     }
 
     #[test]
-    fn random_bytes_with_magic_never_panic(idx in 0usize..13, data in proptest::collection::vec(any::<u8>(), 0..1024)) {
-        let magics: [&[u8]; 13] = [
+    fn random_bytes_with_magic_never_panic(idx in 0usize..14, data in proptest::collection::vec(any::<u8>(), 0..1024)) {
+        let magics: [&[u8]; 14] = [
             b"\x89PNG\r\n\x1a\n", &[0xFF, 0xD8, 0xFF], b"II*\0", b"RIFF\0\0\0\0WEBP", b"GIF89a", b"BM",
             &[0, 0, 1, 0, 1, 0], b"P6\n", b"qoif", &[0x76, 0x2F, 0x31, 0x01], b"#?RADIANCE\n", b"P7\n", b"PF\n",
+            b"\0\0\0\x18ftypheic\0\0\0\0mif1heic",
         ];
         let mut b = magics[idx].to_vec();
         b.extend_from_slice(&data);
@@ -182,7 +186,7 @@ proptest! {
     }
 
     #[test]
-    fn random_bytes_each_format_never_panic(idx in 0usize..13, data in proptest::collection::vec(any::<u8>(), 0..512)) {
+    fn random_bytes_each_format_never_panic(idx in 0usize..Format::ALL.len(), data in proptest::collection::vec(any::<u8>(), 0..512)) {
         let _ = decode_as_with(Format::ALL[idx], &data, &tight());
     }
 
