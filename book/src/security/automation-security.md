@@ -7,7 +7,7 @@ Automation is a privilege boundary because requests can cause filesystem access,
 - Desktop control binds to `127.0.0.1` and uses one JSON request/reply per line.
 - Headless TCP refuses a successfully bound non-loopback address.
 - Every desktop-control and headless-TCP connection must authenticate with a 256-bit bearer token before method dispatch.
-- Encoded request lines are limited to 1 MiB, active TCP connections to 16, and headless/MCP batches to 256 steps.
+- Encoded request lines on desktop/headless TCP and headless JSON-lines stdio are limited to 1 MiB; active TCP connections are limited to 16, and headless/MCP batches to 256 steps.
 - JSON-lines replies and encoded MCP tool results are limited to 8 MiB; retained batch replies
   have an aggregate budget and stop later steps when exhausted. The headless stdio JSON-lines
   transport enforces the same request/reply ceilings as TCP.
