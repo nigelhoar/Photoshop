@@ -480,25 +480,33 @@ pub fn is_enabled(app: &PhotocraftApp, id: &str) -> Option<bool> {
     }
 }
 
-/// Undo / Redo one step of the open session; `None` for other commands or when not transforming.
-pub fn menu(app: &mut PhotocraftApp, id: &str) -> Option<Result<serde_json::Value, String>> {
-    let redo = match id {
-        "edit.undo" => false,
-        "edit.redo" => true,
-        _ => return None,
-    };
-    let t = app.ui.transform.as_mut()?;
+/// While transforming, the box owns the history for every caller (menus, shortcuts, the control
+/// channel, MCP): Undo and Redo step through it, and Toggle Last State, which would change the
+/// document under the box, is refused. `None` for other commands or when not transforming.
+pub fn intercept(app: &mut PhotocraftApp, id: &str) -> Option<Result<serde_json::Value, String>> {
+    app.ui.transform.as_ref()?;
+    match id {
+        "edit.undo" => Some(Ok(step(app, false))),
+        "edit.redo" => Some(Ok(step(app, true))),
+        "edit.toggleLastState" => Some(Err("Commit or cancel the transform first".into())),
+        _ => None,
+    }
+}
+
+/// Undo (or redo) one step of the open session; nothing mid-drag or with no step to take.
+fn step(app: &mut PhotocraftApp, redo: bool) -> serde_json::Value {
+    let Some(t) = app.ui.transform.as_mut() else { return serde_json::Value::Null };
     let Some(pv) = app.transform_preview.as_mut().filter(|pv| pv.gesture.is_none() && pv.warp_drag.is_none()) else {
-        return Some(Ok(serde_json::Value::Null));
+        return serde_json::Value::Null;
     };
     let s = &mut pv.steps;
     s.settle(Step::of(t));
     let (from, to) = if redo { (&mut s.redo, &mut s.undo) } else { (&mut s.undo, &mut s.redo) };
-    let Some(step) = from.pop() else { return Some(Ok(serde_json::Value::Null)) };
+    let Some(step) = from.pop() else { return serde_json::Value::Null };
     to.push(Step::of(t));
     s.settled = Some(step.clone());
     step.restore(t);
-    Some(Ok(json!({"transform": t})))
+    json!({"transform": t})
 }
 
 /// Which part of the box a document point hits.

@@ -1874,7 +1874,7 @@ fn history(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
             });
         });
     }
-    // An open Free Transform owns Undo (transform_tool::menu): stepping the document's history under
+    // An open Free Transform owns Undo (transform_tool::intercept): stepping the document's history under
     // its box would leave it transforming pixels that changed.
     if let Some(delta) = target.filter(|_| app.ui.transform.is_none()) {
         let (cmd, n) = if delta < 0 { ("edit.undo", -delta) } else { ("edit.redo", delta) };

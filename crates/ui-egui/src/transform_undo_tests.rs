@@ -130,6 +130,46 @@ fn undo_steps_back_through_the_transform_not_the_document() {
     assert_eq!(width(&h), 100, "the committed transform is undone");
 }
 
+/// `engine.execute` over the control channel (and MCP, which goes through it) as a programmatic
+/// caller: the result's `ok` flag.
+fn execute(h: &mut Harness<'static, PhotocraftApp>, command: &str) -> bool {
+    let ctx = h.ctx.clone();
+    let (req, _rx) = crate::control::ControlRequest::new("engine.execute", json!({"command": command}));
+    let crate::control::Outcome::Done(reply) = crate::control::handle(h.state_mut(), &ctx, &req) else {
+        panic!("{command}: expected an immediate reply");
+    };
+    h.run_steps(2);
+    reply["ok"].as_bool().unwrap()
+}
+
+/// Undo and Redo sent over the control channel step through the open box like ⌘Z, never the
+/// document under it, and Toggle Last State is refused until the transform ends.
+#[test]
+fn automation_undo_steps_through_the_transform() {
+    let mut h = harness();
+    let steps = history(&h);
+    begin(&mut h);
+    let q0 = quad(&h);
+    drag(&mut h, q0[2], [300.0, 220.0]);
+    let q1 = quad(&h);
+    assert!(execute(&mut h, "edit.undo"));
+    assert!(close(quad(&h), q0), "undid the drag: {:?}", quad(&h));
+    assert!(execute(&mut h, "edit.undo"), "nothing left in the session: a no-op");
+    assert!(close(quad(&h), q0));
+    assert_eq!(history(&h), steps, "the fill is still there");
+    assert_eq!(width(&h), 100);
+    assert!(execute(&mut h, "edit.redo"));
+    assert!(close(quad(&h), q1), "redid the drag");
+    assert!(!execute(&mut h, "edit.toggleLastState"), "refused while transforming");
+    assert!(close(quad(&h), q1));
+    assert_eq!(history(&h), steps);
+    // Once the transform ends, they reach the document again.
+    key(&mut h, Modifiers::NONE, Key::Escape);
+    assert!(h.state().ui.transform.is_none());
+    assert!(execute(&mut h, "edit.undo"));
+    assert_eq!(history(&h), steps - 1, "the fill is undone");
+}
+
 fn width(h: &Harness<'static, PhotocraftApp>) -> u32 {
     let st = h.state().session.active().unwrap();
     st.doc.layer(st.active_layer.unwrap()).unwrap().surface().unwrap().content_bounds().width()
