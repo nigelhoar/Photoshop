@@ -319,6 +319,8 @@ pub struct ToolOptions {
     /// Gradient tool mode: false = "Gradient" (live: a Gradient Fill layer, editable on canvas),
     /// true = "Classic gradient" (paints the pixels).
     pub gradient_classic: bool,
+    /// Blend mode used by both live and classic gradient drags.
+    pub gradient_blend_mode: photocraft_color::BlendMode,
     pub fill_opacity: f32,
     /// Paint Bucket fill source: false = Foreground colour, true = Pattern (Patterns panel selection).
     pub bucket_fill_pattern: bool,
@@ -422,6 +424,7 @@ impl Default for ToolOptions {
             gradient_reverse: false,
             gradient_dither: true,
             gradient_classic: false,
+            gradient_blend_mode: photocraft_color::BlendMode::Normal,
             fill_opacity: 100.0,
             bucket_fill_pattern: false,
             type_font: "Inter".into(),
@@ -577,6 +580,9 @@ pub struct UiState {
     /// ⌘/Ctrl+right-click with any tool (`layer_pick_ui`, #307).
     #[serde(default)]
     pub layer_menu: Option<crate::layer_pick_ui::LayerMenu>,
+    /// Selection-tool context menu opened by a plain canvas right-click.
+    #[serde(default)]
+    pub canvas_tool_menu: Option<crate::canvas_tool_menu::CanvasToolMenu>,
     /// Smoothing is a per-tool option (Brush and Eraser each keep theirs): the tool whose
     /// smoothing the session brush holds, and the other tools' saved values.
     #[serde(default)]
@@ -676,6 +682,7 @@ impl Default for UiState {
             vector_mask_target: false,
             brush_picker: None,
             layer_menu: None,
+            canvas_tool_menu: None,
             smoothing_tool: None,
             tool_smoothing: Vec::new(),
             clone_source: None,
