@@ -25,7 +25,7 @@ const TOOL_SECTIONS: &[&[&[Tool]]] = &[
     ],
     &[
         &[Tool::SpotHealing, Tool::Healing],
-        &[Tool::Brush, Tool::Pencil],
+        &[Tool::Brush, Tool::Pencil, Tool::MixerBrush],
         &[Tool::CloneStamp],
         &[Tool::HistoryBrush],
         &[Tool::Eraser, Tool::BackgroundEraser, Tool::MagicEraser],
@@ -423,7 +423,7 @@ pub fn options_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                 }
                 let tool = app.ui.tool;
                 // Brush edits here go through `tools.setBrush`, one journal entry per gesture (Rule 1).
-                if (tool.is_brushlike() && !matches!(tool, Tool::Brush | Tool::Pencil | Tool::Eraser)) || tool == Tool::QuickSelection {
+                if (tool.is_brushlike() && !matches!(tool, Tool::Brush | Tool::Pencil | Tool::MixerBrush | Tool::Eraser)) || tool == Tool::QuickSelection {
                     let before = app.session.tools.brush.clone();
                     let mut b = before.clone();
                     let pick = brush_preset_chip(ui, &mut b, &app.session.tools.presets);
@@ -532,6 +532,25 @@ pub fn options_bar(app: &mut PhotocraftApp, ui: &mut egui::Ui) {
                         widgets::vline(ui, 22.0);
                         widgets::toggle(ui, &mut b.pressure_size, tl!("Pressure for Size"));
                         widgets::toggle(ui, &mut b.pressure_opacity, tl!("Pressure for Opacity"));
+                    }
+                    Tool::MixerBrush => {
+                        picked = brush_preset_chip(ui, b, &app.session.tools.presets);
+                        crate::brush_picker::settings_toggle(app, ui);
+                        widgets::vline(ui, 22.0);
+                        for (label, value) in [
+                            (tl!("Wet"), &mut b.mixer.wet),
+                            (tl!("Load"), &mut b.mixer.load),
+                            (tl!("Mix"), &mut b.mixer.mix),
+                            (tl!("Flow"), &mut b.mixer.flow),
+                        ] {
+                            opt_label(ui, label);
+                            let mut percent = *value * 100.0;
+                            if widgets::value_field(ui, &mut percent, 0.0..=100.0, "%", 62.0).changed() {
+                                *value = percent / 100.0;
+                            }
+                        }
+                        widgets::vline(ui, 22.0);
+                        widgets::checkbox(ui, &mut b.mixer.sample_all_layers, tl!("Sample All Layers"));
                     }
                     Tool::RectMarquee | Tool::EllipseMarquee if t.pro => {
                         ui.spacing_mut().item_spacing.x = 2.0;
